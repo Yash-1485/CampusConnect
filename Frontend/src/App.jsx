@@ -17,11 +17,17 @@ import RoommateFinder from "./pages/User/RoommateFinder"
 import useUser from './hooks/useUser';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import AdminPanel from "./pages/Admin/AdminPanel"
+import Listings from "./pages/Admin/Listings"
+import AdminProfile from "./pages/Admin/Profile"
+import Reviews from "./pages/Admin/Reviews"
+import Users from "./pages/Admin/Users"
+
 function App() {
   const { theme } = useTheme();
   const { user, isLoading } = useUser();
-
   const isAuthenticated = Boolean(user);
+  const isAdmin=user?.role==="admin";
   // Just for checking page loader
   // if(true){
   //   return <PageLoader />
@@ -44,19 +50,47 @@ function App() {
           </Route>
 
           {/* Protected route for authenticated users */}
-          <Route
-            path="/mySpace"
-            element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
-                <Layout showSidebar={true} />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="bookmarks" element={<Bookmark />} />
-            <Route path="roommates" element={<RoommateFinder />} />
-          </Route>
+          {
+            user
+            ?
+            (
+              user?.role=="user"
+              ? (
+                <Route
+                  path="/mySpace"
+                  element={
+                    <ProtectedRoute isAuthenticated={isAuthenticated}>
+                      <Layout showSidebar={true} />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Dashboard />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="bookmarks" element={<Bookmark />} />
+                  <Route path="roommates" element={<RoommateFinder />} />
+                </Route>
+              )
+              : (
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute isAuthenticated={isAuthenticated}>
+                      {
+                        isAdmin?<Layout showSidebar={true} />:<Navigate to="/" replace/>
+                      }
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<AdminPanel />} />
+                  <Route path="profile" element={<AdminProfile />} />
+                  <Route path="listings" element={<Listings />} />
+                  <Route path="reviews" element={<Reviews />} />
+                  <Route path="users" element={<Users />} />
+                </Route>
+              )
+            )
+            :(<></>)
+          }
         </Routes>
       </Router>
 

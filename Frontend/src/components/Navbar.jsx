@@ -26,7 +26,7 @@ const Navbar = () => {
         { name: 'Profile', to: '/admin/profile' },
         { name: 'Listings', to: '/admin/listings' },
         { name: 'Reviews', to: '/admin/reviews' },
-        { name: 'Reports', to: '/admin/reports' }
+        // { name: 'Reports', to: '/admin/reports' }
     ]
 
     const userDashboardOptions = [
