@@ -61,4 +61,4 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ["full_name","phone", "location_city", "location_state"]
 
     def __str__(self):
-        return f"{self.username} ({self.role})"
+        return f"{self.full_name.split(" ")[0]} ({self.role})"

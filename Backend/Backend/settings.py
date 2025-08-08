@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+import cloudinary_storage
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,8 +43,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     'corsheaders',
     'authentication',
+    'listings',
 ]
 
 MIDDLEWARE = [
@@ -169,3 +176,18 @@ AUTH_USER_MODEL = "authentication.User"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# To upload listings images on cloud
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': 'dkpapfbb2',
+#     'API_KEY': '514464298112773',
+#     'API_SECRET': '1xAKyYmoNht9O6jd896Se3BOz0M',
+# }
+
+# cloudinary.config(
+#     cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+#     api_key=CLOUDINARY_STORAGE['API_KEY'],
+#     api_secret=CLOUDINARY_STORAGE['API_SECRET'],
+#     secure=True
+# )
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
