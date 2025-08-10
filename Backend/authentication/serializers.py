@@ -15,7 +15,6 @@ class SignupSerializer(serializers.ModelSerializer):
     
     email = serializers.EmailField(
         required=True,
-        # validators=[validate_email],  # Built-in Django email validation
         error_messages={
             'required': 'Email is required',
             'invalid': 'Invalid email address',
@@ -91,24 +90,9 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         # exclude = ["password"]
         fields = [
-            "id",
-            "full_name",
-            "email",
-            "profileImage",
-            "role",
-            "phone",
-            "is_verified",
-            "dob",
-            "gender",
-            "location_city",
-            "location_state",
-            "budget",
-            "preferred_categories",
-            "preferred_amenities",
-            "preferred_locations",
-            "sharing_preference",
-            "created_at", 
-            "updated_at"
+            "id", "full_name", "email", "profileImage", "role", "phone", "is_verified", "dob", "gender", "city", "district", "state", "pincode",
+            "affiliation_type", "affiliation_name", "preferred_city", "preferred_district", "preferred_state", "preferred_pincode", 
+            "budget", "preferred_categories", "preferred_amenities", "preferred_locations", "sharing_preference", "created_at", "updated_at"
         ]
     
     def get_profileImage(self, obj):
@@ -145,6 +129,8 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "full_name", "phone", "dob", "gender", "profileImage",
+            "city", "district", "state", "pincode",
+            "affiliation_type", "affiliation_name", "preferred_city", "preferred_district", "preferred_state", "preferred_pincode",
             "preferred_categories", "preferred_amenities",
             "preferred_locations", "budget", "sharing_preference"
         ]

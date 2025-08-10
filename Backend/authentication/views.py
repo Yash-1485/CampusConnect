@@ -139,7 +139,12 @@ def update_profile(request):
                 return error_response("Invalid phone number format", errors=errors, status_code=400)
 
             # Default: send all other validation errors
-            return error_response("Validation failed", errors, status_code=400)
+            else:
+                first_error = next(iter(errors.values()))[0]
+                return error_response(message=first_error ,errors = errors, status_code=400)
+
+            # # Default: send all other validation errors
+            # return error_response("Validation failed", errors, status_code=400)
 
         # Save if valid
         serializer.save()

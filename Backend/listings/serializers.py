@@ -33,6 +33,7 @@ class ListingImageSerializer(serializers.ModelSerializer):
 
 class ListingSerializer(serializers.ModelSerializer):
     images = ListingImageSerializer(many=True, required=True)
+    image_url = serializers.SerializerMethodField()
     
     title = serializers.CharField(
         required=True,
@@ -116,7 +117,7 @@ class ListingSerializer(serializers.ModelSerializer):
         }
     )
     
-    location_city = serializers.CharField(
+    city = serializers.CharField(
         required=True,
         max_length=100,
         error_messages={
@@ -126,29 +127,13 @@ class ListingSerializer(serializers.ModelSerializer):
         }
     )
     
-    location_state = serializers.CharField(
+    state = serializers.CharField(
         required=True,
         max_length=100,
         error_messages={
             'required': 'State is required',
             'max_length': 'State name cannot exceed 100 characters',
             'blank': 'State cannot be blank'
-        }
-    )
-    
-    latitude = serializers.FloatField(
-        required=True,
-        error_messages={
-            'required': 'Latitude is required',
-            'invalid': 'Invalid latitude value'
-        }
-    )
-    
-    longitude = serializers.FloatField(
-        required=True,
-        error_messages={
-            'required': 'Longitude is required',
-            'invalid': 'Invalid longitude value'
         }
     )
     
@@ -161,18 +146,46 @@ class ListingSerializer(serializers.ModelSerializer):
         }
     )
     
-    availability = serializers.BooleanField(
-        required=False,
-        default=True
+    room_type = serializers.ChoiceField(
+        choices=Listing.ROOM_TYPE_CHOICES,
+        required=True,
+        allow_null=True,
+        error_messages={
+            'invalid_choice': f"Invalid room type. Choose from: {', '.join([choice[1] for choice in Listing.ROOM_TYPE_CHOICES])}"
+        }
     )
+    
+    occupancy_limit = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        min_value=1,
+        error_messages={
+            'min_value': 'Occupancy limit must be at least 1',
+            'invalid': 'Invalid occupancy number'
+        }
+    )
+    
+    gender_preference = serializers.ChoiceField(
+        choices=Listing.GENDER_CHOICES,
+        required=True,
+        allow_null=True,
+        error_messages={
+            'invalid_choice': f"Invalid gender preference. Choose from: {', '.join([choice[1] for choice in Listing.GENDER_CHOICES])}"
+        }
+    )
+    
+    food_included = serializers.BooleanField(required=False,default=False)    
+    is_furnished = serializers.BooleanField(required=False,default=False)
+    availability = serializers.BooleanField(required=False,default=True)
 
     class Meta:
         model = Listing
         fields = [
             'id', 'title', 'description', 'category', 'provider_name', 
             'provider_phone', 'provider_email', 'address', 'price', 
-            'location_city', 'location_state', 'latitude', 'longitude', 
-            'amenities', 'availability', 'images', 'is_active', 
+            'city', 'state', 'district', 'pincode',
+            'amenities', 'room_type', 'occupancy_limit', 'gender_preference',
+            'food_included', 'is_furnished', 'availability', 'images', 'is_active', 
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'is_active']
@@ -197,6 +210,30 @@ class ListingSerializer(serializers.ModelSerializer):
                     f"'{amenity}' is not a valid amenity. Valid options are: {', '.join(valid_amenities)}"
                 )
         return value
+    
+    def validate_pincode(self,value):
+        if not value.isdigit():
+            raise serializers.ValidationError("Pincode contains digits only")
+        if len(value)!=6:
+            raise serializers.ValidationError("Pincode must be 6 digits long")
+    
+    # def validate_room_type(self, value):
+    #     if value and self.initial_data.get('category') == 'tutor' and value != 'single':
+    #         raise serializers.ValidationError("Tutor listings can only have single room type")
+    #     return value
+
+    def validate_occupancy_limit(self, value):
+        room_type = self.initial_data.get('room_type')
+        if value and room_type:
+            if room_type == 'single' and value > 1:
+                raise serializers.ValidationError("Single room cannot have occupancy > 1")
+            if room_type == 'double' and value > 2:
+                raise serializers.ValidationError("Double sharing cannot have occupancy > 2")
+            if room_type == 'triple' and value > 3:
+                raise serializers.ValidationError("Triple sharing cannot have occupancy > 3")
+            if room_type == 'quad' and value > 4:
+                raise serializers.ValidationError("Quad sharing cannot have occupancy > 4")
+        return value
 
     def validate_title(self, value):
         """
@@ -217,37 +254,6 @@ class ListingSerializer(serializers.ModelSerializer):
                     code="duplicate_listing"
                 )
         return value
-
-    def validate_latitude(self, value):
-        """
-        Validate latitude and check for nearby existing listings
-        """
-        longitude = self.initial_data.get('longitude')
-        
-        if longitude:
-            # Check for existing listings within 0.001 degrees (~100 meters)
-            nearby_exists = Listing.objects.filter(
-                latitude__range=(value-0.001, value+0.001),
-                longitude__range=(longitude-0.001, longitude+0.001)
-            ).exists()
-            
-            if nearby_exists and self.context.get('request').method == 'POST':
-                raise serializers.ValidationError(
-                    "A listing already exists at or very near this location",
-                    code="duplicate_location"
-                )
-        return value
-
-    def validate_longitude(self, value):
-        """
-        Validate longitude is within valid range
-        """
-        if not (-180 <= value <= 180):
-            raise serializers.ValidationError(
-                "Longitude must be between -180 and 180 degrees",
-                code="invalid_longitude"
-            )
-        return value
     
     # Validate listings images
     def validate_images(self, value):
@@ -260,18 +266,6 @@ class ListingSerializer(serializers.ModelSerializer):
         return value
     
     def validate(self, data):
-        # Validate latitude range (-90 to 90)
-        if not (-90 <= data['latitude'] <= 90):
-            raise serializers.ValidationError({
-                'latitude': 'Latitude must be between -90 and 90 degrees'
-            })
-        
-        # Validate longitude range (-180 to 180)
-        if not (-180 <= data['longitude'] <= 180):
-            raise serializers.ValidationError({
-                'longitude': 'Longitude must be between -180 and 180 degrees'
-            })
-        
         # Validate at least one image is provided
         if 'images' not in data or len(data['images']) == 0:
             raise serializers.ValidationError({
@@ -284,12 +278,6 @@ class ListingSerializer(serializers.ModelSerializer):
         for img in images_data:
             if not img.get('image'):
                 raise serializers.ValidationError({'images': 'Empty or invalid image provided.'})
-        
-        if ('latitude' in data) ^ ('longitude' in data):  # XOR check
-            raise serializers.ValidationError({
-                'non_field_errors': ['Both latitude and longitude must be provided together']
-            })
-        
         return data
     
     def create(self, validated_data):
@@ -315,4 +303,99 @@ class ListingSerializer(serializers.ModelSerializer):
             instance.images.all().delete()
             for image_data in images_data:
                 ListingImage.objects.create(listing=instance, **image_data)                
+        return instance
+
+class UpdateListingImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ListingImage
+        fields = ['image']
+        extra_kwargs = {'image': {'required': False, 'allow_null': True}}
+
+class UpdateListingSerializer(serializers.ModelSerializer):
+    images = UpdateListingImageSerializer(many=True, required=False)
+    
+    room_type = serializers.ChoiceField(
+        choices=Listing.ROOM_TYPE_CHOICES,
+        required=False,
+        allow_null=True
+    )
+    
+    occupancy_limit = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        min_value=1
+    )
+    
+    class Meta:
+        model = Listing
+        exclude = ['created_by', 'created_at', 'updated_at', 'rating', 'review_count']
+        extra_kwargs = {field: {'required': False} for field in [
+            'title', 'description', 'category', 'provider_name', 'provider_phone',
+            'provider_email', 'address', 'price', 'city', 'state', 'district', 'pincode',
+            'amenities', 'availability', 'is_active'
+        ]}
+    
+    def validate(self, data):
+        # Room Type validation
+        if 'room_type' in data or 'occupancy_limit' in data:
+            room_type = data.get('room_type', self.instance.room_type if self.instance else None)
+            occupancy = data.get('occupancy_limit', self.instance.occupancy_limit if self.instance else None)
+            
+            if room_type == 'single' and occupancy and occupancy > 1:
+                raise serializers.ValidationError({
+                    'occupancy_limit': 'Single room cannot have occupancy > 1'
+                })
+                
+            if room_type == 'double' and occupancy and occupancy > 2:
+                raise serializers.ValidationError({
+                    'occupancy_limit': 'Double sharing cannot have occupancy > 2'
+                })
+            
+            if room_type == 'triple' and occupancy and occupancy > 3:
+                raise serializers.ValidationError({
+                    'occupancy_limit': 'Triple sharing cannot have occupancy > 3'
+                })
+            
+            if room_type == 'quad' and occupancy and occupancy > 4:
+                raise serializers.ValidationError({
+                    'occupancy_limit': 'Quad sharing cannot have occupancy > 4'
+                })
+            
+        # Image validation
+        if 'images' in data and data['images'] is not None:
+            if len(data['images']) > 10:
+                raise serializers.ValidationError({'images': 'Maximum 10 images allowed'})
+            if any(not img.get('image') for img in data['images']):
+                raise serializers.ValidationError({'images': 'Empty image data provided'})
+        
+        return data
+    
+    def validate_provider_phone(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("Phone number must contain digits only")
+        if len(value)!=10:raise serializers.ValidationError("Phone number must be 10 digit long")
+        return value
+        
+    def validate_provider_email(self, value):
+        try:
+            validate_email(value)
+        except:
+            raise serializers.ValidationError("Invalid email address format")
+        return value
+    
+    def validate_pincode(self,value):
+        if not value.isdigit():
+            raise serializers.ValidationError("Pincode contains digits only")
+        if len(value)!=6:
+            raise serializers.ValidationError("Pincode must be 6 digits long")
+    
+    def update(self, instance, validated_data):
+        if 'images' in validated_data:
+            instance.images.all().delete()
+            for img_data in validated_data.pop('images', []):
+                ListingImage.objects.create(listing=instance, **img_data)
+        
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        instance.save()
         return instance

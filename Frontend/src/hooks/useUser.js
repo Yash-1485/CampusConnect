@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { getUsers } from '../lib/api';
+import { getUser } from '../lib/api';
 
 export default function useUser() {
     const user = useQuery({
         queryKey: ['user'],
-        queryFn: getUsers,
+        queryFn: getUser,
         retry: false,
     });
 
