@@ -33,7 +33,6 @@ class ListingImageSerializer(serializers.ModelSerializer):
 
 class ListingSerializer(serializers.ModelSerializer):
     images = ListingImageSerializer(many=True, required=True)
-    image_url = serializers.SerializerMethodField()
     
     title = serializers.CharField(
         required=True,
