@@ -40,7 +40,7 @@ const Navbar = () => {
 
     return (
         // For 
-        <nav className="navbar bg-base-200/80 backdrop-blur-md shadow-sm lg:px-36 lg:py-4 sticky top-0 transition-all duration-300" data-theme={theme}>
+        <nav className="navbar bg-base-200/80 backdrop-blur-md shadow-sm lg:px-36 lg:py-4 sticky top-0 transition-all duration-300 z-[10]" data-theme={theme}>
             <div className="flex-1">
                 <Link to="/" className="text-xl font-bold ml-4 flex items-center justify-center gap-2">
                     <div className="bg-primary p-2 rounded-lg">

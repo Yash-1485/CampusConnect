@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { IndianRupee, Star } from 'lucide-react';
 
-const ListingCard = ({ listing }) => {
+const ListingCard = ({ listing, view }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
 
     const getRatingColor = (rating) => {
-        if (rating >= 8) return 'text-green-600'; // Excellent
-        if (rating >= 6) return 'text-yellow-500'; // Good
-        if (rating >= 4) return 'text-orange-500'; // Average
-        return 'text-red-500'; // Poor
+        if (rating >= 8) return 'text-green-600';
+        if (rating >= 6) return 'text-yellow-500';
+        if (rating >= 4) return 'text-orange-500';
+        return 'text-red-500';
     };
 
     const handleImageClick = () => {
@@ -27,47 +27,41 @@ const ListingCard = ({ listing }) => {
             (prevIndex - 1 + listing.images.length) % listing.images.length
         );
     };
-    
+
     return (
-        <div className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow h-full flex flex-col cursor-pointer">
-            {/* Image Display with Manual Navigation */}
-            <figure className="relative h-48 overflow-hidden">
-                {listing.images && listing.images.length > 0 ? (
+        <div
+            className={`card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer
+                ${view === 'row' ? 'flex flex-row h-48' : 'flex flex-col'}
+            `}
+        >
+            {/* Image */}
+            <figure className={`relative overflow-hidden 
+                ${view === 'row' ? 'w-48 h-full' : 'h-48'}
+            `}>
+                {listing.images?.length > 0 ? (
                     <>
-                        {/* Main Image */}
                         <img
                             src={listing.images[currentImageIndex].image}
                             alt={listing.title}
-                            className={`w-full h-full object-cover transition-transform duration-300 ${isExpanded ? 'scale-105' : 'scale-100'
-                                }`}
+                            className={`w-full h-full object-cover transition-transform duration-300 ${isExpanded ? 'scale-105' : 'scale-100'}`}
                             onClick={handleImageClick}
                         />
-
-                        {/* Navigation Buttons (only show if multiple images) */}
                         {listing.images.length > 1 && (
                             <>
                                 <button
                                     className="absolute left-2 top-1/2 -translate-y-1/2 btn btn-circle btn-sm btn-ghost bg-white/50 hover:bg-white"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        goToPrevImage();
-                                    }}
+                                    onClick={(e) => { e.stopPropagation(); goToPrevImage(); }}
                                 >
                                     ❮
                                 </button>
                                 <button
                                     className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-circle btn-sm btn-ghost bg-white/50 hover:bg-white"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        goToNextImage();
-                                    }}
+                                    onClick={(e) => { e.stopPropagation(); goToNextImage(); }}
                                 >
                                     ❯
                                 </button>
                             </>
                         )}
-
-                        {/* Image Counter */}
                         {listing.images.length > 1 && (
                             <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
                                 {currentImageIndex + 1}/{listing.images.length}
@@ -79,8 +73,6 @@ const ListingCard = ({ listing }) => {
                         <span className="text-gray-500">No Image</span>
                     </div>
                 )}
-
-                {/* Availability Badge */}
                 <div className="absolute top-2 left-2">
                     <span className={`badge ${listing.availability ? 'badge-success' : 'badge-error'}`}>
                         {listing.availability ? 'Available' : 'Unavailable'}
@@ -88,8 +80,8 @@ const ListingCard = ({ listing }) => {
                 </div>
             </figure>
 
-            {/* Rest of the card content remains the same */}
-            <div className="card-body flex-grow p-4">
+            {/* Body */}
+            <div className={`card-body p-4 ${view === 'row' ? 'flex-1' : ''}`}>
                 <div className="flex justify-between items-start">
                     <h2 className="card-title text-lg line-clamp-1">{listing.title}</h2>
                     {listing.rating && (
@@ -125,15 +117,12 @@ const ListingCard = ({ listing }) => {
                     )}
                 </div>
 
-                {listing.amenities && listing.amenities.length > 0 && (
+                {listing.amenities?.length > 0 && (
                     <div className="mt-2">
                         <p className="text-sm text-gray-500">Amenities:</p>
                         <div className="flex flex-wrap gap-1 mt-1">
                             {listing.amenities.slice(0, 3).map(amenity => (
-                                <span
-                                    key={amenity}
-                                    className="badge badge-ghost text-xs capitalize p-3"
-                                >
+                                <span key={amenity} className="badge badge-ghost text-xs capitalize p-3">
                                     {amenity.replace('_', ' ')}
                                 </span>
                             ))}

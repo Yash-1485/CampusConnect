@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useListings } from '../hooks/useListings';
 import ListingCard from '../components/ListingCard';
-import { Search, Grid2x2, List, Filter, X } from 'lucide-react';
+import { Search, Grid2x2, List, Filter, X, Ban, Phone, MessagesSquare, Key, LogIn, UserPlus, SquareChartGantt } from 'lucide-react';
 import { IndianRupee } from 'lucide-react';
+import useUser from '../hooks/useUser';
+import { useNavigate } from 'react-router';
 const Browse = () => {
     const {
         listings,
@@ -18,6 +20,11 @@ const Browse = () => {
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
     const [showFilters, setShowFilters] = useState(false);
     const [searchInput, setSearchInput] = useState('');
+
+    const { user } = useUser();
+    const isAuthorized = Boolean(user);
+    const visibleListings = isAuthorized ? listings : listings.slice(0, 5);
+    const navigate = useNavigate();
 
     const handleSearchChange = (e) => {
         setSearchInput(e.target.value);
@@ -76,8 +83,108 @@ const Browse = () => {
         { value: 'any', label: 'All Genders' },
     ];
 
+    if (!isAuthorized) {
+        return (
+            <div className="container mx-auto px-6 py-4 lg:px-40 lg:py-10">
+                <h1 className="text-3xl font-bold mb-2">Browse Listings</h1>
+                <p className="text-gray-600 mb-6">
+                    Search for PGs, hostels, mess, tiffin, tutors...
+                </p>
+
+                {/* Sample listings preview */}
+                {visibleListings.length === 0 ? (
+                    <div className="text-center py-12">
+                        <h3 className="text-xl font-medium">
+                            No listings found matching your criteria
+                        </h3>
+                        <p className="text-gray-500 mt-2">
+                            Try adjusting your search or filters
+                        </p>
+                    </div>
+                ) : viewMode === "grid" ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {visibleListings.map((listing) => (
+                            <ListingCard listing={listing} key={listing.id} view={viewMode} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {visibleListings.map((listing) => (
+                            <ListingCard listing={listing} key={listing.id} view={viewMode} />
+                        ))}
+                    </div>
+                )}
+
+                {/* Enhanced CTA Section with DaisyUI */}
+                <div className="card bg-gradient-to-r from-primary/10 to-secondary/10 mt-12 border border-primary/20">
+                    <div className="card-body items-center text-center">
+                        <div className="max-w-2xl">
+                            <h3 className="card-title text-2xl mb-3">
+                                <Key className="w-6 h-6 mr-2" />
+                                Unlock {listings.length - 5}+ More Listings!
+                            </h3>
+                            <p className="mb-6">
+                                Join our community to view all available accommodations and get full access
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                                <div className="card bg-base-100 shadow-sm">
+                                    <div className="card-body items-center">
+                                        <Search className="w-8 h-8 text-primary mb-2" />
+                                        <p className="font-medium">Full search results</p>
+                                    </div>
+                                </div>
+                                <div className="card bg-base-100 shadow-sm">
+                                    <div className="card-body items-center">
+                                        <Phone className="w-8 h-8 text-primary mb-2" />
+                                        <p className="font-medium">Direct contact details</p>
+                                    </div>
+                                </div>
+                                <div className="card bg-base-100 shadow-sm">
+                                    <div className="card-body items-center">
+                                        <SquareChartGantt className="w-8 h-8 text-primary mb-2" />
+                                        <p className="font-medium">Detailed Overview with Images</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row justify-center gap-4">
+                                <button
+                                    onClick={() => navigate("/login")}
+                                    className="btn btn-primary gap-2"
+                                >
+                                    <LogIn className="w-5 h-5" />
+                                    Login to Continue
+                                </button>
+
+                                <button
+                                    onClick={() => navigate("/signup")}
+                                    className="btn btn-outline btn-primary gap-2"
+                                >
+                                    <UserPlus className="w-5 h-5" />
+                                    Create Free Account
+                                </button>
+                            </div>
+
+                            {/* <p className="text-sm mt-4">
+                                Already have an account?{' '}
+                                <button
+                                    onClick={() => navigate("/login")}
+                                    className="link link-primary"
+                                >
+                                    Sign in
+                                </button>
+                            </p> */}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-6 py-4 lg:px-40 lg:py-10">
             <h1 className="text-3xl font-bold mb-2">Browse Listings</h1>
             <p className="text-gray-600 mb-6">Search for PGs, hostels, mess, tiffin, tutors...</p>
 
@@ -273,9 +380,7 @@ const Browse = () => {
 
             {error && (
                 <div className="alert alert-error mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <Ban />
                     <span>Error loading listings: {error}</span>
                 </div>
             )}
@@ -291,13 +396,13 @@ const Browse = () => {
                     ) : viewMode === 'grid' ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {listings.map((listing) => (
-                                <ListingCard listing={listing} key={listing.id} />
+                                <ListingCard listing={listing} key={listing.id} view={viewMode} />
                             ))}
                         </div>
                     ) : (
                         <div className="space-y-6">
                             {listings.map((listing) => (
-                                <ListingRow listing={listing} key={listing.id} />
+                                <ListingCard listing={listing} key={listing.id} view={viewMode} />
                             ))}
                         </div>
                     )}
@@ -349,43 +454,4 @@ const Browse = () => {
         </div>
     );
 };
-
-// ListingRow component for list view
-const ListingRow = ({ listing }) => {
-    return (
-        <div className="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex flex-col md:flex-row">
-                <div className="md:w-1/3">
-                    {listing.images && listing.images.length > 0 ? (
-                        <img
-                            src={listing.images[0].image}
-                            alt={listing.title}
-                            className="w-full h-48 md:h-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-full h-48 md:h-full bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-500">No Image</span>
-                        </div>
-                    )}
-                </div>
-                <div className="p-6 md:w-2/3">
-                    <h2 className="card-title text-xl">{listing.title}</h2>
-                    <p className="text-gray-600 text-sm mb-2">{listing.address}, {listing.city}</p>
-                    <p className="text-gray-700 mb-3 line-clamp-2">{listing.description}</p>
-
-                    <div className="flex flex-wrap gap-1 mb-3">
-                        <span className="badge badge-primary">₹{listing.price}/month</span>
-                        <span className="badge badge-outline">{listing.category}</span>
-                        {listing.room_type && <span className="badge badge-outline">{listing.room_type}</span>}
-                    </div>
-
-                    <div className="card-actions justify-end">
-                        <button className="btn btn-sm btn-primary">View Details</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 export default Browse;
