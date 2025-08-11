@@ -28,12 +28,27 @@ export const getUser = async () => {
 }
 
 // Listings
-export const fetchListings = async () => {
+export const fetchAllListings = async () => {
     try {
-        const response = await axiosInstance.get("/listings/");
+        const response = await axiosInstance.get("/listings/allListings/");
         return response.data;
     } catch (error) {
         console.error("Error in fetchListings", error);
         return null;
     }
 }
+
+export const fetchListings = async ({ queryKey }) => {
+    const [_key, { page, filters }] = queryKey;
+    const params = { page, ...filters };
+
+    // Remove empty filters
+    Object.keys(params).forEach((key) => {
+        if (params[key] === "" || params[key] == null) {
+            delete params[key];
+        }
+    });
+    
+    const { data } = await axiosInstance.get("listings/", { params });
+    return data;
+};

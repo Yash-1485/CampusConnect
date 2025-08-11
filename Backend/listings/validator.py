@@ -8,7 +8,7 @@ def validate_image_type_and_size(image):
 
     try:
         img = Image.open(image)
-        if img.format.upper() not in ["JPEG", "PNG", "JPG"]:
+        if img.format.upper() not in ["JPEG", "PNG", "JPG", "WEBP"]:
             raise ValidationError("Only JPEG, JPG and PNG formats are supported")
     except Exception:
         raise ValidationError("Invalid image file")

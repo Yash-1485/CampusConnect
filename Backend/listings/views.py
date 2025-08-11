@@ -2,7 +2,7 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import IsAdminRole
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, NotFound
@@ -10,6 +10,9 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Listing
 from .serializers import ListingSerializer, UpdateListingSerializer
 from .utils import error_response, success_response
+from rest_framework.generics import ListAPIView
+from .pagination import CustomPageNumberPagination
+from django.db.models import Q
 
 @csrf_exempt
 @api_view(['POST'])
@@ -17,8 +20,7 @@ from .utils import error_response, success_response
 def create_listing(request):
     try:
         # data = request.data
-        data = request.data.copy()
-        
+        data = request.data.copy()        
         # For image only - We did it before to upload image using form and url both
         # Handle different content types
         # if 'images' not in data and 'images[]' in request.FILES:
@@ -200,10 +202,12 @@ def get_listing_by_id(request, id):
 
 @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def get_all_listings(request):
     try:
-        listings = Listing.objects.filter(is_active=True).all()
-        serializer = ListingSerializer(listings, many=True)
+        # listings = Listing.objects.filter(is_active=True).all()
+        listings = Listing.objects.all()
+        serializer = ListingSerializer(listings, many=True, context={'request': request})
         if serializer.data:
             return success_response(message="All listings returned successfully",data=serializer.data, status_code=200)
         else:
@@ -211,12 +215,63 @@ def get_all_listings(request):
     except Exception as e:
         return error_response(message="Error while retrieving listings", data=str(e), status_code=500)
     
-@permission_classes([IsAuthenticated,IsAdminRole])
 @api_view(['GET'])
+@permission_classes([IsAuthenticated,IsAdminRole])
 def get_all_listings_admin(request):
     try:
         listings = Listing.objects.all()
-        serializer = ListingSerializer(listings, many=True)
+        serializer = ListingSerializer(listings, many=True, context={'request': request})
         return success_response(message="All listings returned successfully",data=serializer.data, status_code=200)
     except Exception as e:
         return error_response(message="Error while retrieving listings", data=str(e), status_code=500)
+    
+# For Pagination
+class ListingListView(ListAPIView):
+    serializer_class = ListingSerializer
+    pagination_class = CustomPageNumberPagination
+    api_view = ['GET']
+    permission_classes = [AllowAny]
+    # queryset = Listing.objects.all().order_by('-id')
+    
+    def get_queryset(self):
+        queryset = Listing.objects.all()
+
+        # --- Manual Filtering ---
+        city = self.request.query_params.get('city')
+        state = self.request.query_params.get('state')
+        district = self.request.query_params.get('district')
+        category = self.request.query_params.get('category')
+        room_type = self.request.query_params.get('room_type')
+        gender = self.request.query_params.get('gender')
+        min_budget = self.request.query_params.get('min')
+        max_budget = self.request.query_params.get('max')
+        
+        if city:
+            queryset = queryset.filter(city__iexact=city)
+        if state:
+            queryset = queryset.filter(state__iexact=state)
+        if district:
+            queryset = queryset.filter(district__iexact=district)
+        if category:
+            queryset = queryset.filter(category__iexact=category)
+        if room_type:
+            queryset = queryset.filter(room_type__iexact=room_type)
+        if gender:
+            queryset = queryset.filter(gender_preference__iexact=gender)
+        if min_budget:
+            queryset = queryset.filter(price__gte=float(min_budget))
+        if max_budget:
+            queryset = queryset.filter(price__lte=float(max_budget))
+
+        # --- Manual Search ---
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search) |
+                Q(description__icontains=search) |
+                Q(city__icontains=search) |
+                Q(state__icontains=search) |
+                Q(category__icontains=search)
+            )
+
+        return queryset

@@ -10,9 +10,10 @@ from django.utils.translation import gettext_lazy as _
 MAX_IMAGE_SIZE_MB = 3
 MAX_IMAGE_COUNT = 5
 class ListingImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
     class Meta:
         model = ListingImage
-        fields = ['image']
+        fields = ['id','image','image_url']
         extra_kwargs = {
             'image': {
                 'required': True,
@@ -23,6 +24,12 @@ class ListingImageSerializer(serializers.ModelSerializer):
                 }
             }
         }
+    
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+        return None
     
     def validate_image(self, value):
         if not value:
@@ -185,6 +192,7 @@ class ListingSerializer(serializers.ModelSerializer):
             'city', 'state', 'district', 'pincode',
             'amenities', 'room_type', 'occupancy_limit', 'gender_preference',
             'food_included', 'is_furnished', 'availability', 'images', 'is_active', 
+            'rating',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'is_active']
