@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { IndianRupee, Star } from 'lucide-react';
+import useUser from '../hooks/useUser';
 
 const ListingCard = ({ listing, view }) => {
+
+    const { user } = useUser();
+    const isAuthorized = Boolean(user);
+
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -135,9 +140,13 @@ const ListingCard = ({ listing, view }) => {
                     </div>
                 )}
 
-                <div className="card-actions justify-end mt-auto pt-4">
-                    <button className="btn btn-sm btn-primary">View Details</button>
-                </div>
+                {
+                    isAuthorized 
+                    && 
+                    <div className="card-actions justify-end mt-auto pt-4">
+                        <button className="btn btn-sm btn-primary">View Details</button>
+                    </div>
+                }
             </div>
         </div>
     );

@@ -104,13 +104,13 @@ const Browse = () => {
                 ) : viewMode === "grid" ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {visibleListings.map((listing) => (
-                            <ListingCard listing={listing} key={listing.id} view={viewMode} />
+                            <ListingCard listing={listing} key={listing.id} view={viewMode}/>
                         ))}
                     </div>
                 ) : (
                     <div className="space-y-6">
                         {visibleListings.map((listing) => (
-                            <ListingCard listing={listing} key={listing.id} view={viewMode} />
+                            <ListingCard listing={listing} key={listing.id} view={viewMode}/>
                         ))}
                     </div>
                 )}
