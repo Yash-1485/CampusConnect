@@ -49,7 +49,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'authentication',
     'listings',
-    'reviews',
+    # 'reviews',
+    'reviews.apps.ReviewsConfig',
+    'bookmarks',
 ]
 
 MIDDLEWARE = [
