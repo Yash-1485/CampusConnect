@@ -11,10 +11,11 @@ const ListingCard = ({ listing, view }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const getRatingColor = (rating) => {
-        if (rating >= 8) return 'text-green-600';
-        if (rating >= 6) return 'text-yellow-500';
-        if (rating >= 4) return 'text-orange-500';
-        return 'text-red-500';
+        if (rating >= 4.5) return 'text-green-600';     // Excellent
+        if (rating >= 3.5) return 'text-lime-500';      // Good
+        if (rating >= 2.5) return 'text-yellow-500';    // Average
+        if (rating >= 1.5) return 'text-orange-500';    // Poor
+        return 'text-red-500';                          // Very Poor
     };
 
     const handleImageClick = () => {
@@ -141,8 +142,8 @@ const ListingCard = ({ listing, view }) => {
                 )}
 
                 {
-                    isAuthorized 
-                    && 
+                    isAuthorized
+                    &&
                     <div className="card-actions justify-end mt-auto pt-4">
                         <button className="btn btn-sm btn-primary">View Details</button>
                     </div>

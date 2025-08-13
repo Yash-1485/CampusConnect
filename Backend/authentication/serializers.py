@@ -135,6 +135,23 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "preferred_locations", "budget", "sharing_preference"
         ]
         extra_kwargs = {field: {"required": False} for field in fields}
+        
+    def get_step_fields(self, step):
+        step_mapping = {
+            'personal': ['dob', 'gender', 'profileImage'],
+            'current_location': ['city', 'district', 'state', 'pincode'],
+            'preferred_location': [
+                'preferred_city', 'preferred_district', 
+                'preferred_state', 'preferred_pincode',
+                'affiliation_type', 'affiliation_name'
+            ],
+            'preferences': [
+                'budget', 'preferred_categories', 
+                'sharing_preference', 'preferred_amenities',
+                'preferred_locations'
+            ]
+        }
+        return step_mapping.get(step, [])
     
     def validate_phone(self, value):
         if not value.isdigit():
