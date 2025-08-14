@@ -22,16 +22,15 @@ import Listings from "./pages/Admin/Listings"
 import AdminProfile from "./pages/Admin/Profile"
 import Reviews from "./pages/Admin/Reviews"
 import Users from "./pages/Admin/Users"
+import ProfileSetupForm from './pages/ProfileSetupForm';
+import VerifiedUserRoute from './components/VerifiedUserRoute';
 
 function App() {
   const { theme } = useTheme();
   const { user, isLoading } = useUser();
   const isAuthenticated = Boolean(user);
-  const isAdmin=user?.role==="admin";
-  // Just for checking page loader
-  // if(true){
-  //   return <PageLoader />
-  // }
+  const isVerified = user?.is_verified;
+  const isAdmin = user?.role === "admin";
 
   if (isLoading) return <PageLoader />;
 
@@ -39,57 +38,88 @@ function App() {
     <div className="min-h-screen" data-theme={theme}>
       <Router>
         <Routes>
-          {/* For basic navbar - For all users */}
           <Route element={<Layout />}>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/browse" element={<Browse />} />
+            <Route path="/" element={
+              <VerifiedUserRoute>
+                <Landing />
+              </VerifiedUserRoute>
+            } />
+            <Route path="/login" element={
+              !isAuthenticated ? <Login /> : <Navigate to={isVerified ? "/" : "/profileSetup"} />
+            } />
+            <Route path="/signup" element={
+              !isAuthenticated ? <Signup /> : <Navigate to={isVerified ? "/" : "/profileSetup"} />
+            } />
+            <Route path="/about" element={
+              <VerifiedUserRoute>
+                <About />
+              </VerifiedUserRoute>
+            } />
+            <Route path="/contact" element={
+              <VerifiedUserRoute>
+                <Contact />
+              </VerifiedUserRoute>
+            } />
+            <Route path="/browse" element={
+              <VerifiedUserRoute>
+                <Browse />
+              </VerifiedUserRoute>
+            } />
+
+            <Route path="/profileSetup" element={
+              isAuthenticated
+                ? (!isVerified ? (<ProfileSetupForm />) : (<Navigate to="/" />))
+                : (<Navigate to="/login" />)
+            } />
           </Route>
 
           {/* Protected route for authenticated users */}
           {
             user
-            ?
-            (
-              user?.role=="user"
-              ? (
-                <Route
-                  path="/mySpace"
-                  element={
-                    <ProtectedRoute isAuthenticated={isAuthenticated}>
-                      <Layout showSidebar={true} />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Dashboard />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="bookmarks" element={<Bookmark />} />
-                  <Route path="roommates" element={<RoommateFinder />} />
-                </Route>
-              )
-              : (
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute isAuthenticated={isAuthenticated}>
-                      {
-                        isAdmin?<Layout showSidebar={true} />:<Navigate to="/" replace/>
+              ?
+              (
+                user?.role == "user"
+                  ? (
+                    <Route
+                      path="/mySpace"
+                      element={
+                        <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <VerifiedUserRoute>
+                            <Layout showSidebar={true} />
+                          </VerifiedUserRoute>
+                        </ProtectedRoute>
                       }
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<AdminPanel />} />
-                  <Route path="profile" element={<AdminProfile />} />
-                  <Route path="listings" element={<Listings />} />
-                  <Route path="reviews" element={<Reviews />} />
-                  <Route path="users" element={<Users />} />
-                </Route>
+                    >
+                      <Route index element={
+                        isVerified ? <Dashboard /> : <Navigate to="/" />
+                      } />
+                      <Route path="profile" element={<Profile />} />
+                      <Route path="bookmarks" element={<Bookmark />} />
+                      <Route path="roommates" element={<RoommateFinder />} />
+                    </Route>
+                  )
+                  : (
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <VerifiedUserRoute>
+                            {
+                              isAdmin ? <Layout showSidebar={true} /> : <Navigate to="/" replace />
+                            }
+                          </VerifiedUserRoute>
+                        </ProtectedRoute>
+                      }
+                    >
+                      <Route index element={<AdminPanel />} />
+                      <Route path="profile" element={<AdminProfile />} />
+                      <Route path="listings" element={<Listings />} />
+                      <Route path="reviews" element={<Reviews />} />
+                      <Route path="users" element={<Users />} />
+                    </Route>
+                  )
               )
-            )
-            :(<></>)
+              : (<></>)
           }
         </Routes>
       </Router>

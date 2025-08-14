@@ -1,5 +1,7 @@
 # serializers.py
 from rest_framework import serializers
+from django.http import QueryDict
+import json
 from django.contrib.auth import authenticate
 from django.core.validators import validate_email
 from .models import User
@@ -125,6 +127,50 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         }
     )
     
+    preferred_categories = serializers.ListField(
+        child=serializers.CharField(),
+        required=False
+    )
+    preferred_amenities = serializers.ListField(
+        child=serializers.CharField(),
+        required=False
+    )
+    preferred_locations = serializers.ListField(
+        child=serializers.CharField(),
+        required=False
+    )
+
+    def to_internal_value(self, data):
+        # Handle QueryDict for form data
+        if isinstance(data, QueryDict):
+            data = data.copy()
+            processed_data = {}
+            
+            # Handle preferred_locations
+            if 'preferred_locations' in data:
+                locations = data.getlist('preferred_locations')
+                try:
+                    # If single JSON string was sent
+                    if len(locations) == 1 and locations[0].startswith('['):
+                        processed_data['preferred_locations'] = json.loads(locations[0])
+                    else:
+                        # If multiple form values were sent
+                        processed_data['preferred_locations'] = locations
+                except json.JSONDecodeError:
+                    processed_data['preferred_locations'] = []
+            
+            # Handle other fields
+            for key, value in data.items():
+                if key not in processed_data:
+                    if key in ['preferred_categories', 'preferred_amenities']:
+                        processed_data[key] = data.getlist(key)
+                    else:
+                        processed_data[key] = value
+            
+            return super().to_internal_value(processed_data)
+        
+        return super().to_internal_value(data)
+    
     class Meta:
         model = User
         fields = [
@@ -135,23 +181,6 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "preferred_locations", "budget", "sharing_preference"
         ]
         extra_kwargs = {field: {"required": False} for field in fields}
-        
-    def get_step_fields(self, step):
-        step_mapping = {
-            'personal': ['dob', 'gender', 'profileImage'],
-            'current_location': ['city', 'district', 'state', 'pincode'],
-            'preferred_location': [
-                'preferred_city', 'preferred_district', 
-                'preferred_state', 'preferred_pincode',
-                'affiliation_type', 'affiliation_name'
-            ],
-            'preferences': [
-                'budget', 'preferred_categories', 
-                'sharing_preference', 'preferred_amenities',
-                'preferred_locations'
-            ]
-        }
-        return step_mapping.get(step, [])
     
     def validate_phone(self, value):
         if not value.isdigit():

@@ -48,7 +48,27 @@ export const fetchListings = async ({ queryKey }) => {
             delete params[key];
         }
     });
-    
+
     const { data } = await axiosInstance.get("listings/", { params });
     return data;
+};
+
+// export const updateProfile = async (data) => {
+//     try {
+//         const formData = data;
+//         return axiosInstance.put(`auth/profile/`, formData, {
+//             headers: {
+//                 'Content-Type': 'multipart/form-data',
+//             }
+//         }
+//         );
+//     } catch (error) {
+//         console.log(error);
+//     }
+// };
+
+export const updateProfile = async (formData) => {
+    return axiosInstance.put(`auth/profile/`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+    });
 };

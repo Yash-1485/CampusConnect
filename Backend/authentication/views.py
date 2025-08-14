@@ -1,9 +1,10 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from django.views.decorators.csrf import csrf_exempt
-
+import json
 from .serializers import SignupSerializer, LoginSerializer, UserSerializer, UpdateProfileSerializer
 from .utils import get_tokens_for_user, error_response
 from django.contrib.auth import get_user_model
@@ -98,99 +99,47 @@ def profile(request):
     except Exception as e:
         return error_response("Failed to get profile", str(e), 500)
 
-# We used this method before to update profile
-# @api_view(['PUT'])
-# @permission_classes([IsAuthenticated])
-# def update_profile(request):
-#     try:
-#         user = request.user
-#         serializer = UserSerializer(user, data=request.data, partial=True, context={'request': request})
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response({"success": True, "message": "Profile updated", "user": serializer.data})
-#         return error_response("Validation failed", serializer.errors, 400)
-#     except Exception as e:
-#         return error_response("Profile update failed", str(e), 500)
-
-# @api_view(['PUT'])
-# @permission_classes([IsAuthenticated])
-# def update_profile(request):
-#     try:
-#         user = request.user
-
-#         serializer = UpdateProfileSerializer(user, data=request.data, partial=True)
-
-#         # Check: At least one field is sent
-#         if not any(request.data.get(field) is not None for field in UpdateProfileSerializer.Meta.fields):
-#             return error_response("At least one field is required to update profile", status_code=400)
-
-#         # Run validation
-#         if not serializer.is_valid():
-#             errors = serializer.errors
-
-#             # Custom field-specific responses
-#             if 'full_name' in errors:
-#                 return error_response("Full name can't be empty", errors=errors, status_code=400)
-
-#             if 'phone' in errors:
-#                 phone_errors = errors['phone']
-#                 if any('10 digits' in str(e).lower() or 'min_length' in str(e) or 'max_length' in str(e) for e in phone_errors):
-#                     return error_response("Phone number must be 10 digits long", errors=errors, status_code=400)
-#                 return error_response("Invalid phone number format", errors=errors, status_code=400)
-
-#             # Default: send all other validation errors
-#             else:
-#                 first_error = next(iter(errors.values()))[0]
-#                 return error_response(message=first_error ,errors = errors, status_code=400)
-
-#             # # Default: send all other validation errors
-#             # return error_response("Validation failed", errors, status_code=400)
-
-#         # Save if valid
-#         serializer.save()
-
-#         # Return updated data
-#         updated_user = User.objects.get(pk=user.pk)
-#         user_data = UserSerializer(updated_user, context={'request': request}).data
-
-#         return Response({
-#             "success": True,
-#             "message": "Profile updated",
-#             "user": user_data
-#         })
-
-#     except Exception as e:
-#         return error_response("Profile update failed", str(e), 500)
-
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def update_profile(request):
     try:
         user = request.user
-        step = request.data.get('step')
-        is_final_submit = request.data.get('is_final_submit', False)
-        
-        serializer = UpdateProfileSerializer(
-            user,
-            data=request.data,
-            partial=True,
-            step=step,
-            is_final_submit=is_final_submit,
-            context={'request': request}
-        )
 
-        # Validate only current step fields unless final submit
-        if not is_final_submit and step:
-            required_fields = serializer.get_step_fields(step)
-            if not any(request.data.get(field) is not None for field in required_fields):
-                return error_response(
-                    f"Please fill all required fields for this step",
-                    status_code=400
-                )
+        if hasattr(request.data, 'getlist'):
+            data = request.data.copy()
+            
+            print(data.getlist('preferred_locations'))
+            for field in ['preferred_categories', 'preferred_amenities']:
+                if field in data:
+                    data.setlist(field, data.getlist(field))
 
+            if 'preferred_locations' in data:
+                if isinstance(data['preferred_locations'], list):
+                    data['preferred_locations'] = json.dumps(data['preferred_locations'])
+        else:
+            data = request.data
+        if 'profileImage' in request.FILES:
+            data['profileImage'] = request.FILES['profileImage']
+
+        if "categories" in data and isinstance(data["categories"], str):
+            try:
+                data["categories"] = json.loads(data["categories"])
+                print(data["categories"])
+            except json.JSONDecodeError as e:
+                print(e)
+        if 'amenities' in request.data:
+            data.setlist('amenities', request.data.getlist('amenities'))
+        serializer = UpdateProfileSerializer(user, data=data, partial=True)
+
+        # Check: At least one field is sent
+        if not any(request.data.get(field) is not None for field in UpdateProfileSerializer.Meta.fields):
+            return error_response("At least one field is required to update profile", status_code=400)
+
+        # Run validation
         if not serializer.is_valid():
             errors = serializer.errors
-
+            print(errors)
             # Custom field-specific responses
             if 'full_name' in errors:
                 return error_response("Full name can't be empty", errors=errors, status_code=400)
@@ -201,28 +150,18 @@ def update_profile(request):
                     return error_response("Phone number must be 10 digits long", errors=errors, status_code=400)
                 return error_response("Invalid phone number format", errors=errors, status_code=400)
 
-            # Default: send all other validation errors
             else:
                 first_error = next(iter(errors.values()))[0]
                 return error_response(message=first_error ,errors = errors, status_code=400)
-        # Save the data
+
+        # Save if valid
         serializer.save()
 
-        response_data = {
-            "success": True,
-            "message": "Profile updated successfully",
-            "user": UserSerializer(user, context={'request': request}).data
-        }
+        # Return updated data
+        updated_user = User.objects.get(pk=user.pk)
+        user_data = UserSerializer(updated_user, context={'request': request}).data
 
-        if is_final_submit:
-            # Mark as verified if all fields are filled
-            if not user.is_verified:
-                all_filled = all(getattr(user, field) is not None for field in serializer.Meta.fields if field not in ["profileImage", "preferred_locations"])
-                if all_filled:
-                    user.is_verified = True
-                    user.save()
-                    response_data['is_verified'] = True
-        return Response({"success":True,"user":response_data,"message":"Profile setup successfully"})
+        return Response({ "success": True, "message": "Profile updated", "user": user_data})
 
     except Exception as e:
         return error_response("Profile update failed", str(e), 500)
