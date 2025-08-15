@@ -1,12 +1,15 @@
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from listings.permissions import IsAdminRole
+from django.utils.timezone import now
+from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from django.views.decorators.csrf import csrf_exempt
 import json
 from .serializers import SignupSerializer, LoginSerializer, UserSerializer, UpdateProfileSerializer
-from .utils import get_tokens_for_user, error_response
+from .utils import get_tokens_for_user, error_response, success_response
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -188,3 +191,91 @@ def get_user(request):
     except Exception as e:
         print(f"Error fetching user: {str(e)}")
         return error_response("Could not fetch user", status_code=500)
+    
+# --------------------------------------------------------------------------------------------------------------
+# For Users in Admin Panel
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,IsAdminRole])
+def get_users(request):
+    users = User.objects.filter(role='user')
+    data = []
+    for u in users:
+        data.append({
+            "id": u.id,
+            "full_name": u.full_name,
+            "email": u.email,
+            "phone": u.phone,
+            "role": u.role,
+            "is_verified": u.is_verified,
+            "dob": u.dob,
+            "gender": u.gender,
+            "city": u.city,
+            "district": u.district,
+            "state": u.state,
+            "pincode": u.pincode,
+            "affiliation_type": u.affiliation_type,
+            "affiliation_name": u.affiliation_name,
+            "preferred_city": u.preferred_city,
+            "preferred_district": u.preferred_district,
+            "preferred_state": u.preferred_state,
+            "preferred_pincode": u.preferred_pincode,
+            "budget": u.budget,
+            "sharing_preference": u.sharing_preference,
+            "preferred_categories": u.preferred_categories,
+            "preferred_amenities": u.preferred_amenities,
+            "preferred_locations": u.preferred_locations,
+            "created_at": u.created_at,
+            "updated_at": u.updated_at,
+            "profileImage": request.build_absolute_uri(u.profileImage.url) if u.profileImage else None,
+        })
+    return success_response(message="Users fetched successfully",data=data)
+
+@csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated,IsAdminRole])
+def delete_user_api(request, user_id):
+    if request.method == 'DELETE':
+        user = User.objects.get(id=user_id)
+        user.delete()
+        return success_response(message= 'success')
+
+# For Admin Panel User - Stats
+@api_view(["GET"])
+@permission_classes([IsAuthenticated,IsAdminRole])
+def user_growth_stats(request):
+    try:
+        today = now()
+        current_month = today.month
+        current_year = today.year
+
+        last_month = 12 if current_month == 1 else current_month - 1
+        last_month_year = current_year - 1 if current_month == 1 else current_year
+
+        qs = User.objects.filter(role='user')
+
+        # Total users
+        total_users = qs.count()
+
+        # Users created this month
+        this_month_count = qs.filter( created_at__year=current_year, created_at__month=current_month).count()
+
+        # Users created last month
+        last_month_count = qs.filter( created_at__year=last_month_year, created_at__month=last_month).count()
+
+        # Growth percentage
+        if last_month_count > 0:
+            growth_percentage = ((this_month_count - last_month_count) / last_month_count) * 100
+        else:
+            growth_percentage = 100 if this_month_count > 0 else 0
+
+        stats = {
+            "total": total_users,
+            "thisMonth": this_month_count,
+            "lastMonth": last_month_count,
+            "growth": round(growth_percentage, 1),
+            "isPositive": growth_percentage >= 0
+        }
+
+        return success_response(data=stats,message="User Stats Fetched successfully")
+    except Exception as e:
+        return error_response(message="Error occured in User Stats sending",status_code=500)

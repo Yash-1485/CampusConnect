@@ -16,13 +16,14 @@ export const logout = async () => {
     return response.data;
 }
 
+// For only One User
 export const getUser = async () => {
     try {
         const response = await axiosInstance.get('/auth/user/');
         return response.data;
     }
     catch (error) {
-        console.log("Error in getUsers:", error);
+        console.log("Error in getUser:", error);
         return null;
     }
 }
@@ -67,8 +68,89 @@ export const fetchListings = async ({ queryKey }) => {
 //     }
 // };
 
+// For Multistep Form Data -> For ProfileSetup 
 export const updateProfile = async (formData) => {
     return axiosInstance.put(`auth/profile/`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
     });
 };
+
+// For More than one User -> Handled By Amdin Panel
+export const getUsers = async () => {
+    try {
+        const response = await axiosInstance.get('/auth/users/');
+        // console.log(response.data)
+        return response.data?.data;
+    }
+    catch (error) {
+        console.log("Error in getUsers:", error);
+        return null;
+    }
+}
+
+export const deleteUser = async (userId) => {
+    try {
+        const response = await axiosInstance.delete(`/auth/users/delete/${userId}/`);
+        return response.data;
+    }
+    catch (error) {
+        console.log("Error in getUsers:", error);
+        return null;
+    }
+}
+
+// For Admin Panel
+export const getUsersGrowthStats = async () => {
+    try {
+        const response = await axiosInstance.get('/auth/userStats/');
+        return response.data?.data;
+    }
+    catch (error) {
+        console.log("Error in getUsersGrowthStats:", error);
+        return null;
+    }
+}
+
+export const getListingsGrowthStats = async () => {
+    try {
+        const response = await axiosInstance.get('/listings/listingsStats/');
+        return response.data?.data;
+    }
+    catch (error) {
+        console.log("Error in getListingsGrowthStats:", error);
+        return null;
+    }
+}
+
+export const getReviewsGrowthStats = async () => {
+    try {
+        const response = await axiosInstance.get('/reviews/reviewsStats/');
+        return response.data?.data;
+    }
+    catch (error) {
+        console.log("Error in getReviewsGrowthStats:", error);
+        return null;
+    }
+}
+
+export const getAdminStats = async () => {
+    try {
+        const response = await axiosInstance.get('/listings/adminStats/');
+        return response.data?.data;
+    }
+    catch (error) {
+        console.log("Error in getAdminStats:", error);
+        return null;
+    }
+}
+
+export const getRecentReviews = async () => {
+    try {
+        const response = await axiosInstance.get('/reviews/recentReviews/');
+        return response.data?.data;
+    }
+    catch (error) {
+        console.log("Error in getRecentReviews:", error);
+        return null;
+    }
+}

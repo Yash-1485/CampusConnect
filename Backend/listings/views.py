@@ -13,6 +13,7 @@ from .utils import error_response, success_response
 from rest_framework.generics import ListAPIView
 from .pagination import CustomPageNumberPagination
 from django.db.models import Q
+from django.utils.timezone import now
 
 @csrf_exempt
 @api_view(['POST'])
@@ -275,3 +276,83 @@ class ListingListView(ListAPIView):
             )
 
         return queryset
+
+# For Admin Panel Listing - Stats
+@api_view(["GET"])
+@permission_classes([IsAuthenticated,IsAdminRole])
+def listing_growth_stats(request):
+    try:
+        today = now()
+        current_month = today.month
+        current_year = today.year
+
+        # Handle last month rollover
+        last_month = 12 if current_month == 1 else current_month - 1
+        last_month_year = current_year - 1 if current_month == 1 else current_year
+
+        qs = Listing.objects.all()
+
+        # total_listings = qs.filter(is_active=True).count()
+        total_listings = qs.count()
+
+        # Listings created this month
+        this_month_count = qs.filter( created_at__year=current_year, created_at__month=current_month).count()
+
+        # Listings created last month
+        last_month_count = qs.filter( created_at__year=last_month_year, created_at__month=last_month).count()
+
+        # Growth percentage calculation
+        if last_month_count > 0:
+            growth_percentage = ((this_month_count - last_month_count) / last_month_count) * 100
+        else:
+            growth_percentage = 100 if this_month_count > 0 else 0
+
+        stats = {
+            "total": total_listings,
+            "thisMonth": this_month_count,
+            "lastMonth": last_month_count,
+            "growth": round(growth_percentage, 1),
+            "isPositive": growth_percentage >= 0
+        }
+
+        return success_response(data=stats,message="Listings Stats Fetched successfully")
+    except Exception as e:
+        return error_response(message="Error occured in Listing Stats sending",status_code=500)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated,IsAdminRole])
+def admin_listing_stats(request):
+    try:
+        today = now()
+        current_month = today.month
+        current_year = today.year
+
+        last_month = 12 if current_month == 1 else current_month - 1
+        last_month_year = current_year - 1 if current_month == 1 else current_year
+
+        qs = Listing.objects.filter(created_by=request.user)
+
+        total_listings = qs.count()
+        this_month_count = qs.filter(created_at__year=current_year, created_at__month=current_month).count()
+        last_month_count = qs.filter(created_at__year=last_month_year, created_at__month=last_month).count()
+
+        growth_percentage = (
+            ((this_month_count - last_month_count) / last_month_count) * 100
+            if last_month_count > 0 else
+            (100 if this_month_count > 0 else 0)
+        )
+
+        recent_listings = list(qs.order_by('-created_at')[:5].values('id', 'title', 'category', 'availability', 'city', 'state', 'price', 'created_at'))
+
+        stats = {
+            "total": total_listings,
+            "thisMonth": this_month_count,
+            "lastMonth": last_month_count,
+            "growth": round(growth_percentage, 1),
+            "isPositive": growth_percentage >= 0,
+            "recentListings": recent_listings
+        }
+
+        return success_response(data=stats, message="Listings Stats Fetched successfully")
+    except Exception as e:
+        return error_response(message="Error occurred in Listing Stats sending", status_code=500)

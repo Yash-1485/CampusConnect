@@ -10,4 +10,6 @@ urlpatterns = [
     path('<int:id>/delete/', views.delete_listing, name='listings.delete_listing'),
     path('<int:id>/toggle-status/', views.toggle_listing_status, name='listings.toggle_listing_status'),
     path('admin/', views.get_all_listings_admin, name='listings.get_all_listings_admin'),
+    path('listingsStats/', views.listing_growth_stats, name='listings.listings_growth_stats'),
+    path('adminStats/', views.admin_listing_stats, name='listings.admin_listing_stats'),
 ]

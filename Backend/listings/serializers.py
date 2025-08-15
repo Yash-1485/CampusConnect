@@ -335,11 +335,11 @@ class UpdateListingSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Listing
-        exclude = ['created_by', 'created_at', 'updated_at', 'rating', 'review_count']
+        exclude = ['created_by', 'updated_at', 'rating', 'review_count']
         extra_kwargs = {field: {'required': False} for field in [
             'title', 'description', 'category', 'provider_name', 'provider_phone',
             'provider_email', 'address', 'price', 'city', 'state', 'district', 'pincode',
-            'amenities', 'availability', 'is_active'
+            'amenities', 'availability', 'is_active','created_at'
         ]}
     
     def validate(self, data):

@@ -2,6 +2,9 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.utils.timezone import now, timedelta
+from django.utils.timesince import timesince
+from django.db.models import Avg, F
 from listings.models import Listing
 from django.shortcuts import get_object_or_404
 from django.http import Http404
@@ -161,6 +164,7 @@ def get_reviews(request):
     try:
         listing = request.query_params.get("listing")
         user = request.query_params.get("user")
+        unApproved = request.query_params.get("unApproved")
 
         reviews = Review.objects.all().select_related("user", "listing")
 
@@ -169,6 +173,9 @@ def get_reviews(request):
 
         if user:
             reviews = reviews.filter(user=user)
+            
+        if user:
+            reviews = reviews.filter(is_approved=False)
 
         serializer = ReviewSerializer(reviews, many=True)
         return Response({"status": "success", "reviews": serializer.data}, status=200)
@@ -192,3 +199,84 @@ def approve_review(request, id):
         return Response({"success":True,"message":"Review approved" ,"review":full_review.data},status=200)
 
     return error_response(message="Error while approving review",errors=serializer.errors, status_code=400)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated,IsAdminRole])
+def review_growth_stats(request):
+    try:
+        today = now()
+        current_month = today.month
+        current_year = today.year
+
+        # Handle last month rollover
+        last_month = 12 if current_month == 1 else current_month - 1
+        last_month_year = current_year - 1 if current_month == 1 else current_year
+
+        qs = Review.objects.all()
+
+        total_reviews = qs.count()
+        approved_reviews = qs.filter(is_approved=True).count()
+        positive_reviews = qs.filter(rating__gte=4).count()
+        average_rating = qs.aggregate(avg=Avg('rating'))['avg'] or 0
+
+        # Reviews created this month
+        this_month_count = qs.filter( created_at__year=current_year, created_at__month=current_month).count()
+
+        # Reviews created last month
+        last_month_count = qs.filter( created_at__year=last_month_year, created_at__month=last_month).count()
+
+        # Growth percentage calculation
+        if last_month_count > 0:
+            growth_percentage = ((this_month_count - last_month_count) / last_month_count) * 100
+        else:
+            growth_percentage = 100 if this_month_count > 0 else 0
+
+        stats = {
+            "total": total_reviews,
+            "approved": approved_reviews,
+            "pending": total_reviews - approved_reviews,
+            "positive": positive_reviews,
+            "positivePercentage": round((positive_reviews / total_reviews * 100), 1) if total_reviews else 0,
+            "averageRating": round(average_rating, 1),
+            "thisMonth": this_month_count,
+            "lastMonth": last_month_count,
+            "growth": round(growth_percentage, 1),
+            "isPositive": growth_percentage >= 0
+        }
+
+        return success_response(data=stats, message="Review stats fetched successfully")
+    except Exception as e:
+        return error_response(message="Error occurred in Review Stats", status_code=500)
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminRole])
+def recent_pending_reviews(request):
+    try:
+        reviews = (
+            Review.objects.filter(is_approved=False).select_related('listing', 'user').annotate(
+                listing_title=F('listing__title'),
+                user_full_name=F('user__full_name')
+            )
+            .values(
+                'id',
+                'listing_title',
+                'user_full_name',
+                'rating',
+                'comment',
+                'is_approved',
+                'created_at'
+            )
+            .order_by('-created_at')[:3]
+        )
+
+        recent_reviews = []
+        for review in reviews:
+            time_diff = timesince(review["created_at"], now())
+            review["time_ago"]=time_diff.split(",")[0].strip() + " ago"
+            recent_reviews.append(review)
+
+        return success_response(message="Recent pending reviews fetched successfully",data=recent_reviews)
+
+    except Exception as e:
+        print(e)
+        return error_response(message="Error occurred in Recent Reviews",status_code=500)
