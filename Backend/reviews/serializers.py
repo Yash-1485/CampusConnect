@@ -1,10 +1,14 @@
 from rest_framework import serializers
+from authentication.serializers import UserSerializer
+from listings.serializers import ListingSerializer
 from authentication.models import User
 from listings.models import Listing
 from django.core.validators import MinValueValidator, MaxValueValidator
 from .models import Review
 
 class ReviewSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)     
+    listing = ListingSerializer(read_only=True)
     rating = serializers.IntegerField(required=True,validators=[MinValueValidator(1), MaxValueValidator(10)],
         error_messages={
             'required': 'Rating is required',

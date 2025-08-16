@@ -174,7 +174,7 @@ def get_reviews(request):
         if user:
             reviews = reviews.filter(user=user)
             
-        if user:
+        if unApproved:
             reviews = reviews.filter(is_approved=False)
 
         serializer = ReviewSerializer(reviews, many=True)
@@ -200,6 +200,37 @@ def approve_review(request, id):
 
     return error_response(message="Error while approving review",errors=serializer.errors, status_code=400)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminRole])
+def admin_get_reviews(request):
+    try:
+        username = request.query_params.get("username")
+        listing_title = request.query_params.get('listing_title')
+        rating = request.query_params.get('rating')
+
+        reviews = Review.objects.all().select_related("user", "listing")
+
+        if username:
+            reviews = reviews.filter(user__full_name__icontains=username)
+
+        if listing_title:
+            reviews = reviews.filter(listing__title__icontains=listing_title)
+
+        if rating:
+            reviews = reviews.filter(rating__gte=rating)
+
+        serializer = ReviewSerializer(reviews,many=True)
+
+        return Response({"status":"success", "reviews":serializer.data},status=200)
+    
+    except Exception as e:
+        return error_response(
+            "Internal Server Error | Error while getting reviews",
+            errors = str(e),
+            status_code = 500
+        )
+
+# Admin Dashboard Views
 @api_view(["GET"])
 @permission_classes([IsAuthenticated,IsAdminRole])
 def review_growth_stats(request):

@@ -54,23 +54,27 @@ export const fetchListings = async ({ queryKey }) => {
     return data;
 };
 
-// export const updateProfile = async (data) => {
-//     try {
-//         const formData = data;
-//         return axiosInstance.put(`auth/profile/`, formData, {
-//             headers: {
-//                 'Content-Type': 'multipart/form-data',
-//             }
-//         }
-//         );
-//     } catch (error) {
-//         console.log(error);
-//     }
-// };
+// Reviews
+export const fetchAllReviews = async(filters= {}) => {
+    try{
+        const params = {};
+        Object.keys(filters).forEach(key => {
+            if (filters[key] !== undefined && filters[key] !== null && filters[key] !== "") {
+                params[key] = filters[key];
+            }
+        });
+        const response = await axiosInstance.get('/reviews/admin/get_reviews', { params });
+        return response.data;
+    }
+    catch(error){
+        console.error("Error fetching reviews: ", error);
+        return { reviews: [] };
+    }
+}
 
 // For Multistep Form Data -> For ProfileSetup 
 export const updateProfile = async (formData) => {
-    return axiosInstance.put(`auth/profile/`, formData, {
+    return axiosInstance.put(`auth/profileSetup/`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
     });
 };

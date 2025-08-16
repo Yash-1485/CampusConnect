@@ -213,6 +213,64 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        error_messages={
+            "blank": "Full name cannot be blank"
+        }
+    )
+    
+    phone = serializers.CharField(
+        required=False,
+        max_length=10,
+        min_length=10,
+        error_messages={
+            "max_length": "Phone number should be 10 digits long",
+            "min_length": "Phone number should be 10 digits long",
+            "invalid": "Invalid phone number format",
+            "blank": "Phone number cannot be blank"
+        }
+    )
+    
+    email = serializers.EmailField(
+        required=False,
+        allow_blank=True,
+        error_messages={
+            "invalid": "Enter a valid email address",
+            "blank": "Email cannot be blank"
+        }
+    )
+    class Meta:
+        model = User
+        fields = [
+            "full_name", "phone","email", "dob", "gender", "profileImage",
+            "city", "district", "state", "pincode",
+            "affiliation_type", "affiliation_name", "preferred_city", "preferred_district", "preferred_state", "preferred_pincode",
+            "preferred_categories", "preferred_amenities",
+            "preferred_locations", "budget", "sharing_preference"
+        ]
+        extra_kwargs = {field: {"required": False} for field in fields}
+
+    def validate_phone(self, value):
+        if value and not value.isdigit():
+            raise serializers.ValidationError("Phone number must contain digits only")
+        return value
+
+    def update(self, instance, validated_data):
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+
+        # Verify user if all required fields are filled
+        if not instance.is_verified:
+            all_filled = all(getattr(instance, field) for field in self.Meta.fields if field != "profileImage")
+            if all_filled:
+                instance.is_verified = True
+
+        instance.save()
+        return instance
     
 class AdminUserListSerializer(serializers.ModelSerializer):
     class Meta:

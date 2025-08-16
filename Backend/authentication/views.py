@@ -195,7 +195,27 @@ def get_user(request):
         return error_response("Could not fetch user", status_code=500)
     
 # --------------------------------------------------------------------------------------------------------------
-# For Users in Admin Panel
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def view_user(request):
+    user = request.user
+    return Response({
+        "id": user.id,
+        "full_name": user.full_name,
+        "email": user.email,
+        "phone":user.phone,
+    })
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user(request):
+    user = request.user
+    serializer = UpdateProfileSerializer(user, data=request.data, partial=True)  # partial=True allows single field updates
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"user": serializer.data}, status=200)
+    return Response(serializer.errors, status=400)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated,IsAdminRole])
 def get_users(request):
@@ -231,6 +251,7 @@ def get_users(request):
             "profileImage": request.build_absolute_uri(u.profileImage.url) if u.profileImage else None,
         })
     return success_response(message="Users fetched successfully",data=data)
+# --------------------------------------------------------------------------------------------------------------
 
 @csrf_exempt
 @api_view(['DELETE'])
