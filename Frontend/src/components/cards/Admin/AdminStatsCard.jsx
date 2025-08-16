@@ -6,7 +6,7 @@ const AdminListingsCard = ({ adminStats: stats }) => {
         <div className="card bg-yellow-500 text-accent-content shadow-lg transform transition-all hover:scale-[1.02] hover:shadow-xl">
             <div className="card-body p-5">
                 <div className="flex justify-between items-start">
-                    <div>
+                    <div className="flex-1 min-w-0">
                         <h2 className="card-title text-lg font-semibold opacity-90">My Listings</h2>
                         <p className="text-4xl font-bold mt-2 mb-1">
                             {stats.total}
@@ -22,9 +22,6 @@ const AdminListingsCard = ({ adminStats: stats }) => {
                                 <p className="text-xl font-semibold">{stats.lastMonth}</p>
                             </div>
                         </div>
-                        {/* <div className={`badge ${stats.isPositive ? 'badge-success' : 'badge-error'}`}>
-                            {stats.isPositive ? '↑' : '↓'} {Math.abs(stats.growth)}%
-                        </div> */}
                     </div>
                     <div className="avatar placeholder">
                         <div className="bg-accent-content bg-opacity-20 text-primary-content rounded-full w-12 h-12 flex items-center justify-center">

@@ -5,7 +5,7 @@ const UserGrowthCard = ({ userGrowthStats: stats }) => {
         <div className="card bg-success text-white shadow-lg transform transition-all hover:scale-[1.02] hover:shadow-xl">
             <div className="card-body p-5">
                 <div className="flex justify-between items-start">
-                    <div>
+                    <div className="flex-1 min-w-0">
                         <h2 className="card-title text-lg font-semibold opacity-90">Users Growth</h2>
                         <p className="text-4xl font-bold mt-2 mb-1">
                             {stats.total}
@@ -21,14 +21,10 @@ const UserGrowthCard = ({ userGrowthStats: stats }) => {
                                 <p className="text-xl font-semibold">{stats.lastMonth}</p>
                             </div>
                         </div>
-                        {/* <div className={`badge ${stats.isPositive ? 'badge-warning' : 'badge-error'} p-3 mt-2`}>
-                            {stats.isPositive ? '↑' : '↓'} {Math.abs(stats.growth)}%
-                        </div> */}
                     </div>
                     <div className="avatar placeholder">
                         <div className="bg-primary-content bg-opacity-20 text-primary-content rounded-full w-12">
-
-                            <TrendingUp />
+                            <TrendingUp className="w-6 h-6"/>
                         </div>
                     </div>
                 </div>
