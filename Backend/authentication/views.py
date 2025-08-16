@@ -3,6 +3,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from listings.permissions import IsAdminRole
 from django.utils.timezone import now
+from django.utils.timesince import timesince
+from django.db.models import F
 from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
@@ -279,3 +281,30 @@ def user_growth_stats(request):
         return success_response(data=stats,message="User Stats Fetched successfully")
     except Exception as e:
         return error_response(message="Error occured in User Stats sending",status_code=500)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminRole])
+def recent_users(request):
+    try:
+        users = (
+            User.objects.filter(role="user").values(
+                'id',
+                'full_name',
+                'email',
+                'city',
+                'state',
+                'created_at'
+            )
+            .order_by('-created_at')[:3]
+        )
+
+        recent_users_list = []
+        for user in users:
+            time_diff = timesince(user["created_at"], now())
+            user["time_ago"] = time_diff.split(",")[0].strip() + " ago"
+            recent_users_list.append(user)
+
+        return success_response( message="Recent users fetched successfully", data=recent_users_list)
+
+    except Exception as e:
+        return error_response( message="Error occurred while fetching recent users", status_code=500)

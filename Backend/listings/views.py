@@ -12,7 +12,7 @@ from .serializers import ListingSerializer, UpdateListingSerializer
 from .utils import error_response, success_response
 from rest_framework.generics import ListAPIView
 from .pagination import CustomPageNumberPagination
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.utils.timezone import now
 
 @csrf_exempt
@@ -306,13 +306,34 @@ def listing_growth_stats(request):
             growth_percentage = ((this_month_count - last_month_count) / last_month_count) * 100
         else:
             growth_percentage = 100 if this_month_count > 0 else 0
+            
+        # 🔹 Category wise listings
+        category_stats = (qs.values("category").annotate(count=Count("id")).order_by("-count"))
+
+        # 🔹 State wise listings (only for the relevant states you listed)
+        relevant_states = [
+            "Maharashtra",
+            # "Delhi NCR",
+            "Rajasthan",
+            "Delhi",
+            "Karnataka",
+            "Gujarat",
+            "Tamil Nadu",
+            "West Bengal",
+            "Uttar Pradesh",
+            "Telangana",
+            "Andhra Pradesh",
+        ]
+        state_stats = (qs.filter(state__in=relevant_states).values("state").annotate(count=Count("id")).order_by("-count"))
 
         stats = {
             "total": total_listings,
             "thisMonth": this_month_count,
             "lastMonth": last_month_count,
             "growth": round(growth_percentage, 1),
-            "isPositive": growth_percentage >= 0
+            "isPositive": growth_percentage >= 0,
+            "categoryWise": list(category_stats),
+            "stateWise": list(state_stats),
         }
 
         return success_response(data=stats,message="Listings Stats Fetched successfully")

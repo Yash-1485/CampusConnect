@@ -13,14 +13,14 @@ const ReviewStatsCard = ({ reviewsGrowthStats:stats }) => {
                         </p>
                         <div className="flex items-center gap-4 mt-2">
                             <div className="flex items-center gap-2">
-                                <ClipboardCheck className="size-6 text-green-600/80" strokeWidth="2.5px"/>
+                                {/* <ClipboardCheck className="size-6 text-green-600/80" strokeWidth="2.5px"/> */}
                                 <div>
                                     <p className="text-sm opacity-80">Approved</p>
                                     <p className="text-xl font-semibold">{stats.approved}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Clock className="size-6 text-yellow-500/90" strokeWidth="2.5px" />
+                                {/* <Clock className="size-6 text-yellow-500/90" strokeWidth="2.5px" /> */}
                                 <div>
                                     <p className="text-sm opacity-80">Pending</p>
                                     <p className="text-xl font-semibold">{stats.pending}</p>

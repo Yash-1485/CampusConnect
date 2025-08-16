@@ -154,3 +154,14 @@ export const getRecentReviews = async () => {
         return null;
     }
 }
+
+export const getRecentUsers = async () => {
+    try {
+        const response = await axiosInstance.get('/auth/recentUsers/');
+        return response.data?.data;
+    }
+    catch (error) {
+        console.log("Error in getRecentUsers:", error);
+        return null;
+    }
+}
