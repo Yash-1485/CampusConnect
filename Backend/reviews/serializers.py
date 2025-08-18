@@ -9,7 +9,7 @@ from .models import Review
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)     
     listing = ListingSerializer(read_only=True)
-    rating = serializers.IntegerField(required=True,validators=[MinValueValidator(1), MaxValueValidator(10)],
+    rating = serializers.DecimalField(max_digits=2, decimal_places=1,required=True,validators=[MinValueValidator(1), MaxValueValidator(10)],
         error_messages={
             'required': 'Rating is required',
             'min_value': 'Rating must be at least 1',

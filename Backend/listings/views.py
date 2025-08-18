@@ -190,7 +190,8 @@ def toggle_listing_status(request,id):
         return error_response("Error while deleting listing - Internal Server Error", str(e), 500)
     
 @api_view(['GET'])
-@permission_classes([IsAuthenticated,IsAdminRole])
+# @permission_classes([IsAuthenticated,IsAdminRole])
+@permission_classes([IsAuthenticated])
 def get_listing_by_id(request, id):
     try:
         listing = Listing.objects.get(pk=id)

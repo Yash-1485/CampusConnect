@@ -77,6 +77,8 @@ def remove_bookmark(request, id):
 def get_bookmarks(request):
     try:
         user_id = request.query_params.get('user')
+        if not user_id:
+            user_id=request.user.id
         listing_id = request.query_params.get('listing')
 
         bookmarks = Bookmark.objects.all()
@@ -95,3 +97,38 @@ def get_bookmarks(request):
 
     except Exception as e:
         return error_response( message="Error fetching bookmarks", errors=str(e), status_code=500)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_bookmark(request):
+    try:
+        data = request.data.copy()
+        listing_id = data.get("listing")
+
+        if not listing_id:
+            return error_response("Listing ID is required", status_code=400)
+
+        # Check if bookmark exists
+        bookmark = Bookmark.objects.filter(user=request.user, listing_id=listing_id).first()
+
+        if bookmark:
+            bookmark.delete()
+            return success_response("Bookmark removed successfully", {"toggled": False})
+
+        # Otherwise create
+        serializer = BookmarkSerializer(data=data, context={"request": request})
+        if not serializer.is_valid():
+            return error_response("Invalid bookmark data", errors=serializer.errors, status_code=400)
+
+        with transaction.atomic():
+            new_bookmark = serializer.save(user=request.user)
+
+        return Response({
+            "success": True,
+            "message": "Listing bookmarked successfully",
+            "toggled": True,
+            "bookmark": BookmarkSerializer(new_bookmark, context={"request": request}).data
+        }, status=201)
+
+    except Exception as e:
+        return error_response("Error while toggling bookmark", errors=str(e), status_code=500)

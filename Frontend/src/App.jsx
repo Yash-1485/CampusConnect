@@ -24,6 +24,8 @@ import Reviews from "./pages/Admin/Reviews"
 import Users from "./pages/Admin/Users"
 import ProfileSetupForm from './pages/ProfileSetupForm';
 import VerifiedUserRoute from './components/VerifiedUserRoute';
+import ListingDetail from './pages/ListingDetails';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   const { theme } = useTheme();
@@ -37,6 +39,7 @@ function App() {
   return (
     <div className="min-h-screen" data-theme={theme}>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={
@@ -63,6 +66,13 @@ function App() {
             <Route path="/browse" element={
               <VerifiedUserRoute>
                 <Browse />
+              </VerifiedUserRoute>
+            } />
+            <Route path="/listing/:id" element={
+              <VerifiedUserRoute>
+                <ProtectedRoute isAuthenticated={isAuthenticated}>
+                  <ListingDetail />
+                </ProtectedRoute>
               </VerifiedUserRoute>
             } />
 

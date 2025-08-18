@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.utils.timezone import now, timedelta
 from django.utils.timesince import timesince
+from django.utils.dateparse import parse_datetime
 from django.db.models import Avg, F
 from listings.models import Listing
 from django.shortcuts import get_object_or_404
@@ -24,7 +25,7 @@ def create_review(request):
         user_id = data.get("user")
 
         # Check if listing ID is provided
-        if not listing_id:
+        if not user_id:
             return error_response("User ID is required", status_code=400)
         
         if not listing_id:
@@ -32,7 +33,6 @@ def create_review(request):
 
         # Check if listing exists
         listing = get_object_or_404(Listing, id=listing_id)
-
         # Check for duplicate review
         if Review.objects.filter(user=request.user, listing=listing).exists():
             return error_response("You have already submitted a review for this listing", status_code=400)
@@ -42,6 +42,7 @@ def create_review(request):
         data["listing"] = listing.id
 
         serializer = ReviewSerializer(data=data, context={"request": request})
+        print(serializer.is_valid())
         if not serializer.is_valid():
             errors = serializer.errors
 
@@ -75,7 +76,8 @@ def create_review(request):
 
         # Save review
         with transaction.atomic():
-            review = serializer.save()
+            print(data)
+            review = serializer.save(user=request.user, listing=listing)
 
         return Response({
             "success": True,
@@ -84,6 +86,7 @@ def create_review(request):
         }, status=201)
 
     except Exception as e:
+        print(e)
         return error_response("Error while creating review - Internal Server Error", str(e), 500)
 
 @api_view(["PUT"])
@@ -159,7 +162,7 @@ def delete_review(request, id):
         return error_response("Error while deleting review - Internal Server Error", errors=str(e), status_code=500)
     
 @api_view(["GET"])
-@permission_classes([IsAuthenticated, IsAdminRole])
+@permission_classes([IsAuthenticated])
 def get_reviews(request):
     try:
         listing = request.query_params.get("listing")
@@ -178,7 +181,20 @@ def get_reviews(request):
             reviews = reviews.filter(is_approved=False)
 
         serializer = ReviewSerializer(reviews, many=True)
-        return Response({"status": "success", "reviews": serializer.data}, status=200)
+        serialized_data = serializer.data
+        
+        enhanced_reviews = []
+        for review in serialized_data:
+            created_at = parse_datetime(review.get("created_at"))
+            if created_at:
+                time_diff = timesince(created_at, now())
+                review["time_ago"] = time_diff.split(",")[0].strip() + " ago"
+            else:
+                review["time_ago"] = None
+            enhanced_reviews.append(review)
+
+        return Response({"status": "success", "reviews": enhanced_reviews, "message":"Reviews fetched successfully"},status=200,)
+        # return Response({"status": "success", "reviews": serializer.data}, status=200)
 
     except Exception as e:
         return error_response("Internal Server Error | Error while getting reviews",errors=str(e),status_code=500)

@@ -29,6 +29,17 @@ export const getUser = async () => {
 }
 
 // Listings
+export const getListing = async (id) => {
+    try {
+        const response = await axiosInstance.get(`/listings/${id}/`);
+        return response.data;
+    }
+    catch (error) {
+        console.log("Error in getListing:", error);
+        return null;
+    }
+}
+
 export const fetchAllListings = async () => {
     try {
         const response = await axiosInstance.get("/listings/allListings/");
@@ -55,8 +66,8 @@ export const fetchListings = async ({ queryKey }) => {
 };
 
 // Reviews
-export const fetchAllReviews = async(filters= {}) => {
-    try{
+export const fetchAllReviews = async (filters = {}) => {
+    try {
         const params = {};
         Object.keys(filters).forEach(key => {
             if (filters[key] !== undefined && filters[key] !== null && filters[key] !== "") {
@@ -66,24 +77,74 @@ export const fetchAllReviews = async(filters= {}) => {
         const response = await axiosInstance.get('/reviews/admin/get_reviews', { params });
         return response.data;
     }
-    catch(error){
+    catch (error) {
         console.error("Error fetching reviews: ", error);
         return { reviews: [] };
     }
 }
 
+export const getReviewsByListingId = async (listingId) => {
+    try {
+        const response = await axiosInstance.get(`/reviews/`, {
+            params: { listing: listingId },
+        });
+        return response.data;
+    } catch (error) {
+        console.log("Error in getReviewsByListingId:", error);
+        return null;
+    }
+};
+
+export const submitReview = async ({ review }) => {
+    try {
+        const response = await axiosInstance.post(`/reviews/create/`, review);
+        return response.data;
+    } catch (error) {
+        console.log("Error in submitReview:", error);
+        return null;
+    }
+};
+
+// Bookmarks
+export const getBookmarksByListingId = async (listingId) => {
+    try {
+        const response = await axiosInstance.get(`/bookmarks/`, {
+            params: { listing: listingId },
+        });
+        return response.data;
+    } catch (error) {
+        console.log("Error in getBookmarksByListingId:", error);
+        return null;
+    }
+};
+
+export const toggleBookmark = async ({ listingId }) => {
+    try {
+        const response = await axiosInstance.post("/bookmarks/toggle/", { listing: listingId });
+        return response.data;
+    }
+    catch (error) {
+        console.log("Error in toggleBookmark:", error);
+        return null;
+    }
+};
+
 // For Multistep Form Data -> For ProfileSetup 
 export const updateProfile = async (formData) => {
-    return axiosInstance.put(`auth/profileSetup/`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-    });
+    try {
+        return axiosInstance.put(`auth/profileSetup/`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    } catch (error) {
+        console.log("Error in updateProfile:", error);
+        return null;
+    }
 };
 
 // For More than one User -> Handled By Amdin Panel
 export const getUsers = async () => {
     try {
         const response = await axiosInstance.get('/auth/users/');
-        // console.log(response.data)
         return response.data?.data;
     }
     catch (error) {

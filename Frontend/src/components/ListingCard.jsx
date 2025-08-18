@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { IndianRupee, Star } from 'lucide-react';
 import useUser from '../hooks/useUser';
+import { useNavigate } from 'react-router';
+import useBookmarks from '../hooks/useBookmarks';
+import BookmarkButton from './BookmarkButton';
 
 const ListingCard = ({ listing, view }) => {
 
     const { user } = useUser();
     const isAuthorized = Boolean(user);
+    const navigate = useNavigate();
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -33,6 +37,17 @@ const ListingCard = ({ listing, view }) => {
             (prevIndex - 1 + listing.images.length) % listing.images.length
         );
     };
+
+    const { bookmarks, isLoading: bookmarksLoading } = useBookmarks(listing.id);
+    if (bookmarksLoading) return (
+        <div className={`card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer justify-center align-center
+                ${view === 'row' ? 'flex flex-row h-48' : 'flex flex-col'}
+            `}>
+            <span className="loading loading-spinner loading-lg"></span>
+        </div>
+    );
+
+    const isBookmarked = isAuthorized && bookmarks.bookmarks.length > 0;
 
     return (
         <div
@@ -144,8 +159,15 @@ const ListingCard = ({ listing, view }) => {
                 {
                     isAuthorized
                     &&
-                    <div className="card-actions justify-end mt-auto pt-4">
-                        <button className="btn btn-sm btn-primary">View Details</button>
+                    <div className="card-actions flex justify-between mt-auto pt-4">
+                        <div>
+                            <button className="btn btn-md btn-primary" onClick={() => navigate(`/listing/${listing.id}/`)}>
+                                <span>View Details</span>
+                            </button>
+                        </div>
+                        <div>
+                            <BookmarkButton listingId={listing.id} isBookmarked={isBookmarked} view='card' />
+                        </div>
                     </div>
                 }
             </div>
