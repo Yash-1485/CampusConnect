@@ -327,3 +327,20 @@ def recent_pending_reviews(request):
     except Exception as e:
         print(e)
         return error_response(message="Error occurred in Recent Reviews",status_code=500)
+
+# --
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_review_count(request):
+    #returns the count of total reviews given by the current user
+    user = request.user
+    count = Review.objects.filter(user = user).count()
+    return Response({"count": count})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_reviews(request):
+    user = request.user
+    reviews = Review.objects.filter(user = user).select_related('listing')
+    serializer = ReviewSerializer(reviews,many=True,context={'request': request})
+    return Response({"status": "success", "reviews": serializer.data})

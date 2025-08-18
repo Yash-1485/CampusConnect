@@ -1,15 +1,18 @@
 from rest_framework import serializers
 from .models import Bookmark
 from listings.models import Listing
+from listings.serializers import ListingSerializer
 
 class BookmarkSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
     listing = serializers.PrimaryKeyRelatedField(queryset=Listing.objects.filter(is_active=True))
+    # --
+    listing_info = ListingSerializer(read_only=True,source='listing')
 
     class Meta:
         model = Bookmark
-        fields = ['id', 'user', 'listing', 'created_at']
-        read_only_fields = ['id', 'user', 'listing', 'created_at']
+        fields = ['id', 'user', 'listing', 'listing_info', 'created_at']
+        read_only_fields = ['id', 'user', 'listing', 'listing_info', 'created_at']
 
     def validate(self, attrs):
         user = self.context['request'].user

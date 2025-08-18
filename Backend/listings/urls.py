@@ -12,4 +12,6 @@ urlpatterns = [
     path('admin/', views.get_all_listings_admin, name='listings.get_all_listings_admin'),
     path('listingsStats/', views.listing_growth_stats, name='listings.listings_growth_stats'),
     path('adminStats/', views.admin_listing_stats, name='listings.admin_listing_stats'),
+    # --
+    path('recommendedListings/', views.recommended_listings, name='recommended_listings')
 ]

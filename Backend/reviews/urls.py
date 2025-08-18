@@ -10,4 +10,7 @@ urlpatterns = [
     path('<int:id>/delete/', views.delete_review, name='reviews.delete_review'),
     path('admin/<int:id>/approve/', views.approve_review, name='reviews.approve_review'),
     path('admin/get_reviews/', views.admin_get_reviews, name='reviews.admin_get_reviews'),
+    # --
+    path('user/count/', views.user_review_count, name='reviews.user_review_count'),
+    path('user/reviews/', views.get_user_reviews, name="reviews.user_reviews")
 ]

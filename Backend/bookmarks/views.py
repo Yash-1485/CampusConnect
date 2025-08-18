@@ -132,3 +132,21 @@ def toggle_bookmark(request):
 
     except Exception as e:
         return error_response("Error while toggling bookmark", errors=str(e), status_code=500)
+
+# --
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_bookmark_count(request):
+    #returns total count of bookmarks of current user
+    user = request.user
+    count = Bookmark.objects.filter(user = user).count()
+    return Response({"count": count})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def recent_bookmarks(request):
+    #to fetch the 3 recent bookmarks of the current user
+    user = request.user
+    bookmarks = Bookmark.objects.filter(user = user).order_by('-created_at')[:3]
+    serializer = BookmarkSerializer(bookmarks, many = True)
+    return Response({"bookmarks" : serializer.data})

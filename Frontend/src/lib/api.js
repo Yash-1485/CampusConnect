@@ -230,3 +230,66 @@ export const getRecentUsers = async () => {
         return null;
     }
 }
+
+// --
+// for getting the current logged in user
+export const getUserDetails = async() => {
+    try{
+        const response = await axiosInstance.get('/auth/user/');
+        return response.data;
+    } catch(error) {
+        console.log(error);
+        return null;
+    }
+}
+
+
+export const getUserReviewCount = async() => {
+    try{
+        const response  = await axiosInstance.get('reviews/user/count');
+        return response.data.count;
+    } catch(err) {
+        console.log(err);
+        return 0;
+    }
+}
+
+export const getUserBookmarkCount = async() => {
+    try{
+        const response  = await axiosInstance.get('bookmarks/user/count');
+        return response.data.count;
+    } catch(err) {
+        console.log(err);
+        return 0;
+    }
+}
+
+export const fetchRecentBookmarks = async() => {
+    try{
+        const response = await axiosInstance.get('/bookmarks/user/recent');
+        return response.data.bookmarks;
+    } catch(err){
+        console.log(err);
+        return [];
+    }
+}
+
+export const getUserReviews = async() => {
+    try{
+        const response = await axiosInstance.get('reviews/user/reviews');
+        return response.data.reviews;
+    } catch(err){
+        console.log(err);
+        return [];
+    }
+}
+
+export const fetchRecommendedListings = async() => {
+    try{
+        const response = await axiosInstance.get('/listings/recommendedListings/');
+        return response.data.listings || [];
+    } catch(err){
+        console.log(err);
+        return [];
+    }
+}

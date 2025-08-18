@@ -378,3 +378,17 @@ def admin_listing_stats(request):
         return success_response(data=stats, message="Listings Stats Fetched successfully")
     except Exception as e:
         return error_response(message="Error occurred in Listing Stats sending", status_code=500)
+
+# --
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def recommended_listings(request):
+    user = request.user
+    listings = Listing.objects.filter(
+        city = user.preferred_city,
+        state = user.preferred_state,
+        is_active = True
+    ).order_by('-rating')[:5]
+
+    serializer = ListingSerializer(listings,many=True,context={'request': request})
+    return Response({"status": "success", "listings": serializer.data})
