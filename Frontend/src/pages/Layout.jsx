@@ -1,3 +1,4 @@
+import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import { Outlet } from 'react-router';
@@ -18,6 +19,9 @@ const Layout = ({ showSidebar = false }) => {
                     <Outlet />
                 </main>
             </div>
+            {
+                !showSidebar && <Footer />
+            }
         </div>
     );
 };

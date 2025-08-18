@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from .models import Bookmark
+from listings.models import Listing
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -92,7 +93,7 @@ def get_bookmarks(request):
         if listing_id:
             bookmarks = bookmarks.filter(listing__id=listing_id)
 
-        serializer = BookmarkSerializer(bookmarks, many=True)
+        serializer = BookmarkSerializer(bookmarks, many=True, context={"request": request})
         return Response({ "success": True, "count": bookmarks.count(), "bookmarks": serializer.data}, status=200)
 
     except Exception as e:

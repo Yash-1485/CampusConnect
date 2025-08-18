@@ -6,7 +6,7 @@ from django.utils.html import format_html
 @admin.register(User)
 class CustomUserAdmin(BaseUserAdmin):
     model = User
-    list_display = ("email", "full_name", "role", "is_verified", "preferred_city", "preferred_state", "get_preferred_categories", "profile_preview")
+    list_display = ("id","email", "full_name", "role", "is_verified", "preferred_city", "preferred_state", "get_preferred_categories", "profile_preview")
     search_fields = ("email", "full_name", "phone", "preferred_city", "preferred_state")
     list_filter = ("role", "is_verified", "preferred_state", "preferred_city")
     
