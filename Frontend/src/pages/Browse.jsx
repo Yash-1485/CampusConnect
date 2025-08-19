@@ -83,6 +83,8 @@ const Browse = () => {
         { value: 'any', label: 'All Genders' },
     ];
 
+    if (loading) return <PageLoader />;
+
     if (!isAuthorized) {
         return (
             <div className="container mx-auto px-6 py-4 lg:px-40 lg:py-10">

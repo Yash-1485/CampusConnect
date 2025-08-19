@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .serializers import SignupSerializer, LoginSerializer, UserSerializer, UpdateProfileSerializer
+from .serializers import SignupSerializer, LoginSerializer, UserSerializer, UpdateProfileSerializer, UpdateUserSerializer
 from .utils import get_tokens_for_user, error_response, success_response
 from django.contrib.auth import get_user_model
 
@@ -210,7 +210,7 @@ def view_user(request):
 @permission_classes([IsAuthenticated])
 def update_user(request):
     user = request.user
-    serializer = UpdateProfileSerializer(user, data=request.data, partial=True)  # partial=True allows single field updates
+    serializer = UpdateUserSerializer(user, data=request.data, partial=True)  # partial=True allows single field updates
     if serializer.is_valid():
         serializer.save()
         return Response({"user": serializer.data}, status=200)

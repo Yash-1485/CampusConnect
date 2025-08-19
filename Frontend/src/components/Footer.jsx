@@ -4,7 +4,11 @@ import { Facebook, Twitter, Instagram, Linkedin, GraduationCap } from 'lucide-re
 
 const Footer = () => {
     const { user } = useUser();
+
     const currentYear = new Date().getFullYear();
+
+    const isAuthenticated = Boolean(user);
+    const isAdmin = user?.role === "admin";
 
     return (
         <footer className="bg-gradient-to-r from-base-200 via-base-300 to-base-200 dark:from-base-900 dark:via-base-800 dark:to-base-900 text-base-content dark:text-gray-400 py-10 border-t border-base-300">
@@ -48,14 +52,30 @@ const Footer = () => {
 
                 <div className="flex flex-col items-center md:items-start gap-2">
                     <h4 className="font-semibold mb-2">Account</h4>
-                    <Link to="/login" className="hover:text-primary transition transform hover:scale-105">Login</Link>
-                    <Link to="/signup" className="hover:text-primary transition transform hover:scale-105">Signup</Link>
-                    <Link
-                        to={user ? "/mySpace" : "/login"}
-                        className="hover:text-primary transition transform hover:scale-105"
-                    >
-                        Dashboard
-                    </Link>
+                    {
+                        isAuthenticated ?
+                            !isAdmin ? (
+                                <Link
+                                    to="/mySpace"
+                                    className="hover:text-primary transition transform hover:scale-105"
+                                >
+                                    Dashboard
+                                </Link>
+                            ) : (
+                                <Link
+                                    to="/admin"
+                                    className="hover:text-primary transition transform hover:scale-105"
+                                >
+                                    Dashboard
+                                </Link>
+                            )
+                            : (
+                                <>
+                                    <Link to="/login" className="hover:text-primary transition transform hover:scale-105">Login</Link>
+                                    <Link to="/signup" className="hover:text-primary transition transform hover:scale-105">Signup</Link>
+                                </>
+                            )
+                    }
                 </div>
 
             </div>

@@ -2,10 +2,12 @@ import { Bookmark } from 'lucide-react';
 import ListingCard from '../../components/ListingCard';
 import useBookmarksUser from '../../hooks/useBookmarksUser';
 import useUser from '../../hooks/useUser';
+import { useNavigate } from 'react-router';
 
 const BookmarksPage = () => {
     const { user } = useUser();
     const { bookmarks, isLoading } = useBookmarksUser(user?.id);
+    const navigate=useNavigate();
 
     if (isLoading) {
         return (
@@ -51,7 +53,7 @@ const BookmarksPage = () => {
                         <p className="text-gray-500 mt-2">
                             Save listings you like to see them here
                         </p>
-                        <button className="btn btn-primary mt-4">
+                        <button className="btn btn-primary mt-4" onClick={()=>{navigate("/browse")}}>
                             Browse Listings
                         </button>
                     </div>

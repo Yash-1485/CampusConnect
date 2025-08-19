@@ -243,10 +243,11 @@ class UpdateUserSerializer(serializers.ModelSerializer):
             "blank": "Email cannot be blank"
         }
     )
+    
     class Meta:
         model = User
         fields = [
-            "full_name", "phone","email", "dob", "gender", "profileImage",
+            "full_name", "phone", "email", "dob", "gender", "profileImage",
             "city", "district", "state", "pincode",
             "affiliation_type", "affiliation_name", "preferred_city", "preferred_district", "preferred_state", "preferred_pincode",
             "preferred_categories", "preferred_amenities",

@@ -13,7 +13,6 @@ import Layout from './pages/Layout';
 import Dashboard from "./pages/User/Dashboard"
 import Profile from "./pages/User/Profile"
 import Bookmark from "./pages/User/Bookmark"
-import RoommateFinder from "./pages/User/RoommateFinder"
 import useUser from './hooks/useUser';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -105,7 +104,6 @@ function App() {
                       } />
                       <Route path="profile" element={<Profile />} />
                       <Route path="bookmarks" element={<Bookmark />} />
-                      <Route path="roommates" element={<RoommateFinder />} />
                     </Route>
                   )
                   : (

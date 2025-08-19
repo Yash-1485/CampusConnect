@@ -47,7 +47,7 @@ const ListingCard = ({ listing, view }) => {
         </div>
     );
 
-    const isBookmarked = isAuthorized && bookmarks.bookmarks.length > 0;
+    const isBookmarked = isAuthorized && bookmarks?.bookmarks.length > 0;
 
     return (
         <div
