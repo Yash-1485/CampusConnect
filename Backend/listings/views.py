@@ -79,32 +79,6 @@ def create_listing(request):
     except Exception as e:
         return error_response("Error while creating listing - Internal Server Error", str(e), 500)
 
-# @csrf_exempt
-# @api_view(['PUT'])
-# @permission_classes([IsAdminRole])
-# def update_listing(request, id):
-#     try:
-#         listing = Listing.objects.get(id=id)
-#         data = request.data
-#         serializer = ListingSerializer(listing, data=data, partial=True, context={'request': request})
-        
-#         if not serializer.is_valid():
-#             errors = serializer.errors
-#             return error_response("Validation error", status_code=400, errors=errors)
-            
-#         if serializer.is_valid():
-#             listing = serializer.save()
-#             return Response({
-#                 "success": True,
-#                 "message": "Listing updated successfully",
-#                 "listing": ListingSerializer(listing, context={'request': request}).data
-#             }, status=200)
-            
-#     except Listing.DoesNotExist:
-#         return error_response("Listing not found", status_code=404)
-#     except Exception as e:
-#         return error_response("Error while updating listing - Internal Server Error", str(e), 500)
-
 @csrf_exempt
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated,IsAdminRole])

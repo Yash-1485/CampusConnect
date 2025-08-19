@@ -123,7 +123,7 @@ const Browse = () => {
                         <div className="max-w-2xl">
                             <h3 className="card-title text-2xl mb-3">
                                 <Key className="w-6 h-6 mr-2" />
-                                Unlock {listings.length - 5}+ More Listings!
+                                Unlock {pagination?.totalItems - 5}+ More Listings!
                             </h3>
                             <p className="mb-6">
                                 Join our community to view all available accommodations and get full access

@@ -43,7 +43,7 @@ export const getListing = async (id) => {
 export const fetchAllListings = async () => {
     try {
         const response = await axiosInstance.get("/listings/allListings/");
-        return response.data;
+        return response.data?.data;
     } catch (error) {
         console.error("Error in fetchListings", error);
         return null;

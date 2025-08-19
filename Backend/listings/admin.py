@@ -17,7 +17,7 @@ class ListingImageInline(admin.TabularInline):
 class ListingAdmin(admin.ModelAdmin):
     list_display = ('id','title', 'city', 'state', 'provider_name', 'provider_email', 'provider_phone', 'price', 'created_by', 'created_at')
     search_fields = ('title', 'description', 'city', 'state', 'provider_name', 'provider_email', 'provider_phone')
-    list_filter = ('price', 'description', 'city', 'state', 'provider_name', 'provider_email', 'provider_phone', 'created_at')
+    list_filter = ('city', 'state', 'created_at')
     inlines = [ListingImageInline]
 
 @admin.register(ListingImage)

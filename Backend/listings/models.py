@@ -1,6 +1,7 @@
 from django.db import models
 from multiselectfield import MultiSelectField
 from django.conf import settings
+from django.utils import timezone
 from cloudinary.models import CloudinaryField
 from .validator import validate_image_type_and_size, validate_created_by
 
@@ -77,7 +78,8 @@ class Listing(models.Model):
 
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, validators=[validate_created_by])
-    created_at = models.DateTimeField(auto_now_add=True)
+    # created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
