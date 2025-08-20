@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # 'reviews',
     'reviews.apps.ReviewsConfig',
     'bookmarks',
+    'ml',
 ]
 
 MIDDLEWARE = [

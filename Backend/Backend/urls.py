@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/listings/', include('listings.urls')),
     path('api/reviews/', include('reviews.urls')),
     path('api/bookmarks/', include('bookmarks.urls')),
+    path('api/ml/', include('ml.urls')),
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

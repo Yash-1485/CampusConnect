@@ -11,7 +11,7 @@ const Sidebar = () => {
         { name: 'Profile', to: '/admin/profile' },
         { name: 'Listings', to: '/admin/listings' },
         { name: 'Reviews', to: '/admin/reviews' },
-        // { name: 'Reports', to: '/admin/reports' }
+        { name: 'ReviewAnalysis', to: '/admin/reviewAnalysis' }
     ];
 
     const userDashboardOptions = [

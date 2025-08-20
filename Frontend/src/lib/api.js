@@ -95,6 +95,19 @@ export const getReviewsByListingId = async (listingId) => {
     }
 };
 
+export const getReviewSentiment = async (comment) => {
+    try {
+        const response = await axiosInstance.post("/ml/predict/", {
+            comment: comment,
+        });
+        return response.data;
+    } catch (error) {
+        console.log("Error in getReviewSentiment:", error);
+        return null;
+    }
+};
+
+
 export const submitReview = async ({ review }) => {
     try {
         const response = await axiosInstance.post(`/reviews/create/`, review);

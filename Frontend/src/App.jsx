@@ -25,6 +25,7 @@ import ProfileSetupForm from './pages/ProfileSetupForm';
 import VerifiedUserRoute from './components/VerifiedUserRoute';
 import ListingDetail from './pages/ListingDetails';
 import ScrollToTop from './components/ScrollToTop';
+import ReviewAnalysis from './pages/Admin/ReviewsAnalysis';
 
 function App() {
   const { theme } = useTheme();
@@ -124,6 +125,7 @@ function App() {
                       <Route path="listings" element={<Listings />} />
                       <Route path="reviews" element={<Reviews />} />
                       <Route path="users" element={<Users />} />
+                      <Route path="reviewAnalysis" element={<ReviewAnalysis />} />
                     </Route>
                   )
               )
