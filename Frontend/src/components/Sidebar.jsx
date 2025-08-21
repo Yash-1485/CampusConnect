@@ -18,6 +18,7 @@ const Sidebar = () => {
         { name: 'Dashboard', to: '/mySpace', end: true },
         { name: 'Profile', to: '/mySpace/profile' },
         { name: 'Bookmarks', to: '/mySpace/bookmarks' },
+        { name: 'Price Prediction', to: '/mySpace/pricePrediction' },
     ];
 
     const options = user?.role === "admin" ? adminPanelOptions : userDashboardOptions;

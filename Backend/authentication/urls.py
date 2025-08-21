@@ -15,4 +15,5 @@ urlpatterns = [
     path('users/delete/<int:user_id>/', views.delete_user_api, name='delete_user_api'),
     path("profile/update/", views.update_user, name="auth.user_profile"),
     path('profile/',views.view_user,name='view_user'),
+    path("send-email/",views.send_email, name="send_email"),
 ]

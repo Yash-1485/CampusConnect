@@ -317,3 +317,13 @@ export const fetchRecommendedListings = async () => {
         return [];
     }
 }
+
+export const getPricePrediction = async (inputData) => {
+    try {
+        const response = await axiosInstance.post('/price-prediction/predict/', inputData);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching price prediction:", error);
+        throw error;
+    }
+};

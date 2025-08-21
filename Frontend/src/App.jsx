@@ -15,6 +15,7 @@ import Profile from "./pages/User/Profile"
 import Bookmark from "./pages/User/Bookmark"
 import useUser from './hooks/useUser';
 import ProtectedRoute from './components/ProtectedRoute';
+import PricePredictionForm from "./pages/User/PricePredictionForm"
 
 import AdminPanel from "./pages/Admin/AdminPanel"
 import Listings from "./pages/Admin/Listings"
@@ -105,6 +106,7 @@ function App() {
                       } />
                       <Route path="profile" element={<Profile />} />
                       <Route path="bookmarks" element={<Bookmark />} />
+                      <Route path="pricePrediction" element={<PricePredictionForm />} />
                     </Route>
                   )
                   : (

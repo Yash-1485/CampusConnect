@@ -33,7 +33,7 @@ const Navbar = () => {
         { name: 'Dashboard', to: '/mySpace' },
         { name: 'Profile', to: '/mySpace/profile' },
         { name: 'Bookmarks', to: '/mySpace/bookmarks' },
-        { name: 'Roommate Finder', to: '/mySpace/roommates' }
+        { name: 'Price Prediction', to: '/mySpace/pricePrediction' },
     ]
 
     const { user } = useUser();

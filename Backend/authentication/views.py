@@ -9,6 +9,7 @@ from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
 import json
 from .serializers import SignupSerializer, LoginSerializer, UserSerializer, UpdateProfileSerializer, UpdateUserSerializer
 from .utils import get_tokens_for_user, error_response, success_response
@@ -329,3 +330,20 @@ def recent_users(request):
 
     except Exception as e:
         return error_response( message="Error occurred while fetching recent users", status_code=500)
+
+#-------------------------------email send----------------------------
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def send_email(request):
+    to_email = request.data.get("to")
+    subject = request.data.get("subject")
+    message = request.data.get("message")
+    from_email = request.user.email
+    if not all([to_email, subject, message]):
+        return error_response("All fields are required", status_code=400)
+
+    try:
+        send_mail(subject,f"From: {from_email}\n\n{message}",from_email,[to_email],fail_silently=False,)
+        return success_response(message="Email sent successfully")
+    except Exception as e:
+        return error_response("Failed to send email", str(e), 500)
