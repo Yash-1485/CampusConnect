@@ -2,17 +2,20 @@ import { Calendar, Mail, Phone, X } from "lucide-react";
 import { useState } from "react";
 import axiosInstance from "../../lib/axios"; // your axios wrapper with auth headers
 import { toast } from "react-toastify";
+import useUser from "../../hooks/useUser";
 
 const ProviderCard = ({ listing, isFoodService }) => {
     const [showModal, setShowModal] = useState(false)
     const [subject, setSubject] = useState("")
     const [message, setMessage] = useState("")
     const [loading, setLoading] = useState(false)
+    const {user}=useUser();
 
     const handleSend = async (e) => {
         e.preventDefault()
         setLoading(true)
         try {
+            setMessage((prev)=>prev+" for "+listing?.provider_email)
             await axiosInstance.post("auth/send-email/", {
                 to: "yashparekh914@gmail.com",
                 subject,
@@ -78,6 +81,7 @@ const ProviderCard = ({ listing, isFoodService }) => {
                 <button
                     onClick={() => setShowModal(true)}
                     className="flex w-full items-center gap-3 p-3 hover:bg-base-200 rounded-lg cursor-pointer"
+                    disabled={user.role === "admin"}
                 >
                     <Mail size={18} className="text-gray-500" />
                     <span className="hover:text-primary">{listing.provider_email}</span>

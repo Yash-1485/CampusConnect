@@ -165,9 +165,9 @@ const ListingCard = ({ listing, view }) => {
                                 <span>View Details</span>
                             </button>
                         </div>
-                        <div>
+                        {user?.role==="user" && <div>
                             <BookmarkButton listingId={listing.id} isBookmarked={isBookmarked} view='card' />
-                        </div>
+                        </div>}
                     </div>
                 }
             </div>

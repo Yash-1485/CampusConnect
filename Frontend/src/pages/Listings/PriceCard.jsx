@@ -2,11 +2,12 @@ import { CATEGORY_CHOICES } from '../../constants/constants';
 import { Bookmark, MapPin, Star } from 'lucide-react';
 import useBookmarks from '../../hooks/useBookmarks';
 import BookmarkButton from '../../components/BookmarkButton';
+import useUser from '../../hooks/useUser';
 
 const PriceCard = ({ id, listing, isFoodService }) => {
 
     const { bookmarks, isLoading: bookmarksLoading } = useBookmarks(id);
-
+    const { user } = useUser();
     const getCategoryLabel = (category) => {
         return CATEGORY_CHOICES.find(([value]) => value === category)?.[1] || category;
     };
@@ -47,9 +48,9 @@ const PriceCard = ({ id, listing, isFoodService }) => {
                 <span>{listing.availability ? 'Available' : 'Unavailable'}</span>
             </div>
 
-            <div className="hidden lg:block">
+            {user?.role==="user" && <div className="hidden lg:block">
                 <BookmarkButton listingId={listing.id} isBookmarked={isBookmarked} />
-            </div>
+            </div>}
 
             <div className="divider"></div>
 

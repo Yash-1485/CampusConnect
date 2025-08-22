@@ -11,12 +11,14 @@ import PriceCard from "./Listings/PriceCard";
 import BookmarkButton from "../components/BookmarkButton";
 import useBookmarks from "../hooks/useBookmarks";
 import MobileView from "./Listings/MobileView";
+import useUser from "../hooks/useUser";
 
 const ListingDetail = () => {
     const { id } = useParams();
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(true);
     // const [isMobile, setIsMobile] = useState(false);
+    const { user } = useUser();
     const { bookmarks, isLoading: bookmarksLoading } = useBookmarks(id);
 
     const isFoodService = listing?.category === 'tiffin' || listing?.category === 'mess';
@@ -100,9 +102,9 @@ const ListingDetail = () => {
                     <span className="text-xl font-bold text-primary">₹{listing.price}</span>
                     <span className="text-gray-500">/{isFoodService ? 'month' : 'month'}</span>
                 </div>
-                <div className="flex gap-2">
+                {user?.role==="user" && <div className="flex gap-2">
                     <BookmarkButton listingId={listing.id} isBookmarked={isBookmarked} />
-                </div>
+                </div>}
             </div>
         </div>
     );

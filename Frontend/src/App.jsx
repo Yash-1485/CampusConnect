@@ -59,11 +59,11 @@ function App() {
                 <About />
               </VerifiedUserRoute>
             } />
-            <Route path="/contact" element={
+            {user?.role==="user" && <Route path="/contact" element={
               <VerifiedUserRoute>
                 <Contact />
               </VerifiedUserRoute>
-            } />
+            } />}
             <Route path="/browse" element={
               <VerifiedUserRoute>
                 <Browse />

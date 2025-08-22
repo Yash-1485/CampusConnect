@@ -51,15 +51,20 @@ const Navbar = () => {
             </div>
 
             <div className="hidden md:flex gap-2 mr-2">
-                {navLinks.map((link, idx) => (
-                    <Link
+                {navLinks.map((link, idx) => {
+                    if (link.name === "Contact" && user?.role === "admin") {
+                        return null;
+                    }
+
+                    return (<Link
                         key={idx}
                         to={link.to}
                         className={`btn btn-ghost btn-sm ${location.pathname === link.to ? 'text-primary' : ''}`}
                     >
                         {link.name}
                     </Link>
-                ))}
+                    )
+                })}
 
                 {user ? (
                     <>

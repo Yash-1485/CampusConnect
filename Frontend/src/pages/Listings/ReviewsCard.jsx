@@ -64,7 +64,7 @@ const ReviewsCard = ({ listing, isFoodService }) => {
                     <Star className="text-yellow-500 fill-current" size={20} />
                     Reviews {reviewsData?.reviews?.length > 0 && `(${reviewsData.reviews.length})`}
                 </h2>
-                {user && !hasUserReviewed && (
+                {user && user?.role==="user" && !hasUserReviewed && (
                     <button
                         className="btn btn-primary btn-sm"
                         onClick={() => setShowReviewForm(!showReviewForm)}
@@ -73,7 +73,7 @@ const ReviewsCard = ({ listing, isFoodService }) => {
                         {showReviewForm ? "Cancel" : "Add Review"}
                     </button>
                 )}
-                {hasUserReviewed && (
+                {user?.role==="user" && hasUserReviewed && (
                     <button className="btn btn-sm btn-disabled" disabled>
                         Already Reviewed
                     </button>
