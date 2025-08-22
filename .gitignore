@@ -1,2 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdm
+*.pdb
+*.egg-info/
+*.egg
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Virtual Environment
 .venv/
+venv/
+
+# Environment variables
+.env
+*.env
+
+# Logs
+*.log
+
+# Frontend (Node/React)
 Frontend/node_modules/
+Frontend/.next/
+Frontend/.nuxt/
+Frontend/dist/
+Frontend/build/
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Other
+*.tar.gz
+*.zip
