@@ -40,7 +40,7 @@ const ListingCard = ({ listing, view }) => {
 
     const { bookmarks, isLoading: bookmarksLoading } = useBookmarks(listing.id);
     if (bookmarksLoading) return (
-        <div className={`card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer justify-center align-center
+        <div className={`card bg-base-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer justify-center items-center
                 ${view === 'row' ? 'flex flex-row h-48' : 'flex flex-col'}
             `}>
             <span className="loading loading-spinner loading-lg"></span>

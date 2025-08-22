@@ -77,7 +77,7 @@ const Profile = () => {
 
     return (
         <div className="min-h-screen p-6 bg-base-100 text-base-content transition-colors duration-300">
-            <h2 className="text-3xl font-semibold mb-6 text-center">User Profile</h2>
+            <h2 className="text-3xl font-semibold mb-6 text-center">Admin Profile</h2>
 
             {/* Profile Card */}
             <div className="max-w-md mx-auto card bg-base-200 shadow-md rounded-lg p-6 flex flex-col items-center space-y-3">

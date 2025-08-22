@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Listing, ListingImage
+from django.db.models import Count
 from django.utils.html import format_html
 
 class ListingImageInline(admin.TabularInline):
@@ -15,10 +16,19 @@ class ListingImageInline(admin.TabularInline):
 
 @admin.register(Listing)
 class ListingAdmin(admin.ModelAdmin):
-    list_display = ('id','title', 'city', 'state', 'provider_name', 'provider_email', 'provider_phone', 'price', 'created_by', 'created_at')
+    list_display = ('id','title', 'city', 'state', 'provider_name', 'provider_email', 'provider_phone', 'price', 'created_by', 'created_at', 'image_count')
     search_fields = ('title', 'description', 'city', 'state', 'provider_name', 'provider_email', 'provider_phone')
-    list_filter = ('city', 'state', 'created_at', 'updated_at')
+    list_filter = ('city', 'state', 'category', 'created_at', 'updated_at')
     inlines = [ListingImageInline]
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(image_count=Count('images'))
+
+    def image_count(self, obj):
+        return obj.image_count
+    image_count.short_description = "Image Count"
+    image_count.admin_order_field = 'image_count'
 
 @admin.register(ListingImage)
 class ListingImageAdmin(admin.ModelAdmin):
