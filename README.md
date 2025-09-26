@@ -37,6 +37,20 @@ A **campus community platform** designed to help students connect, share, and di
 
 ---
 
+## 📸 Screenshots  
+
+### Home Page  
+<img src="Frontend/src/assets/CampusConnect_IMG_1.jpeg" alt="Home Page" width="700">
+
+### Listings Page  
+<img src="Frontend/src/assets/CampusConnect_IMG_2.jpeg" alt="Listings Page" width="700">
+
+### Admin Panel  
+<img src="Frontend/src/assets/CampusConnect_IMG_3.jpeg" alt="Recommendation Section" width="700">
+
+
+---
+
 ## ⚙️ Installation & Setup  
 
 ### 1. Clone the repository  
